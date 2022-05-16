@@ -11,7 +11,7 @@ go build
 # Build on Linux for MacOS / cross compilation
 
 ```
-GOOS=darwin GOARCH=amd64 make
+GOOS=darwin GOARCH=amd64 go build
 ```
 
 # Run
