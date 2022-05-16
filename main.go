@@ -120,6 +120,9 @@ func main() {
 				} else if txn.Type == "refund_failure" {
 					fmt.Printf("Net amount: %v It's probably refund transaction\n", PrintAmount(txn.Net))
 					continue
+				} else if txn.Type == "stripe_fee" {
+					fmt.Printf("Net amount: %v Radar for Fraud teams fee, it's Stripe fee for fraud scereening\n", PrintAmount(txn.Net))
+					continue
 				} else {
 					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
