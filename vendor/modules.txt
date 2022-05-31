@@ -1,4 +1,4 @@
-# github.com/chargebee/chargebee-go v2.8.0+incompatible
+# github.com/chargebee/chargebee-go v2.10.0+incompatible
 github.com/chargebee/chargebee-go
 github.com/chargebee/chargebee-go/actions/customer
 github.com/chargebee/chargebee-go/enum
@@ -31,11 +31,14 @@ github.com/chargebee/chargebee-go/models/customer/enum
 github.com/chargebee/chargebee-go/models/differentialprice
 github.com/chargebee/chargebee-go/models/differentialprice/enum
 github.com/chargebee/chargebee-go/models/download
+github.com/chargebee/chargebee-go/models/entitlementoverride
 github.com/chargebee/chargebee-go/models/estimate
 github.com/chargebee/chargebee-go/models/event
 github.com/chargebee/chargebee-go/models/event/enum
 github.com/chargebee/chargebee-go/models/export
 github.com/chargebee/chargebee-go/models/export/enum
+github.com/chargebee/chargebee-go/models/feature
+github.com/chargebee/chargebee-go/models/feature/enum
 github.com/chargebee/chargebee-go/models/gift
 github.com/chargebee/chargebee-go/models/gift/enum
 github.com/chargebee/chargebee-go/models/hierarchy
@@ -47,6 +50,8 @@ github.com/chargebee/chargebee-go/models/invoiceestimate
 github.com/chargebee/chargebee-go/models/invoiceestimate/enum
 github.com/chargebee/chargebee-go/models/item
 github.com/chargebee/chargebee-go/models/item/enum
+github.com/chargebee/chargebee-go/models/itementitlement
+github.com/chargebee/chargebee-go/models/itementitlement/enum
 github.com/chargebee/chargebee-go/models/itemfamily
 github.com/chargebee/chargebee-go/models/itemfamily/enum
 github.com/chargebee/chargebee-go/models/itemprice
@@ -76,6 +81,7 @@ github.com/chargebee/chargebee-go/models/sitemigrationdetail
 github.com/chargebee/chargebee-go/models/sitemigrationdetail/enum
 github.com/chargebee/chargebee-go/models/subscription
 github.com/chargebee/chargebee-go/models/subscription/enum
+github.com/chargebee/chargebee-go/models/subscriptionentitlement
 github.com/chargebee/chargebee-go/models/subscriptionestimate
 github.com/chargebee/chargebee-go/models/subscriptionestimate/enum
 github.com/chargebee/chargebee-go/models/taxwithheld
@@ -98,7 +104,7 @@ github.com/pariz/gountries
 github.com/pkg/errors
 # github.com/stripe/stripe-go v70.15.0+incompatible
 github.com/stripe/stripe-go
-github.com/stripe/stripe-go/balance
+github.com/stripe/stripe-go/balancetransaction
 github.com/stripe/stripe-go/form
 github.com/stripe/stripe-go/payout
 # github.com/vjeantet/jodaTime v1.0.0

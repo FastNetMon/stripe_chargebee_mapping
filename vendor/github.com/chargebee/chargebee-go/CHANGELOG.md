@@ -1,3 +1,61 @@
+### v2.10.0 (2022-05-23)
+* * *
+
+#### New endpoints:
+* invoice#sync_usages and invoice#resend_einvoice have been added to the invoice resource.
+* credit_notes#resend_einvoice has been added to the credit_notes resource.
+* features#list_features, features#create_a_feature, features#update_a_feature, features#retrieve_a_feature, features#delete_a_feature, features#activate_a_feature, features#archive_a_feature and features#reactivate_a_feature have  been added to the features resource.
+* subscription_entitlements#subscription_entitlements_for_subscription and subscription_entitlements#set_subscription_entitlement_availability have been added to the subscription_entitlements resource.
+* item_entitlements#item_entitlements_for_an_item, item_entitlements#item_entitlements_for_a_feature, item_entitlements#add_an_item_entitlements and item_entitlements#upsert_or_remove_an_item_entitlements_for_item have been added to the item_entitlements resource.
+* entitlement_overrides#add_entitlement_override_for_a_subscription and entitlement_overrides#list_entitlement_override_for_a_subscription have been added to the entitlement_overrides resource.
+
+#### New Resource:
+* features, subscription_entitlements, item_entitlements and entitlement_overrides have been added.
+
+#### New filter parameters:
+* einvoice[status] filter parameter has been added in credit_notes#list_credit_notes api.
+
+#### New Enum values:
+* paypal_express_checkout has been added to payment_method_type enum.
+* feature_created, feature_updated, feature_deleted, feature_activated, feature_reactivated, feature_archived, item_entitlements_updated, entitlement_overrides_updated, entitlement_overrides_removed, item_entitlements_removed and entitlement_overrides_auto_removed have been added to the event_type enum.
+* action enum has been added.
+
+### v2.9.0 (2022-04-25)
+* * *
+
+#### New endpoints:
+* UnbilledCharge#CreateUnbilledCharge has been added to UnbilledCharge resource. Applicable only for PC1.0.
+
+#### New attributes:
+* channel have been added to the Addon, AttachedItem, CreditNote, Customer, Invoice, ItemFamily, ItemPrice, Plan and Subscription resources.
+* external_name and channel have been added to the Item resource.
+
+#### New input parameters:
+* external_name have been added to Item#CreateRequest and Item#UpdateRequest.
+* channel have been added to Addon#AddonListRequest.
+* channel have been added to CreditNote#CreditNoteListRequest.
+* channel have been added to Customer#CustomerListRequest.
+* invoice[channel], subscription[channel] and customer[channel] have been added to Export#RevenueRecognitionRequest and Export#DeferredRevenueRequest.
+* plan[channel] have been added to Export#PlansRequest.
+* addon[channel] have been added to Export#AddonsRequest.
+* customer[channel] have been added to Export#CustomersRequest.
+* subscription[channel] have been added to Export#SubscriptionsRequest.
+* invoice[channel] have been added to Export#InvoicesRequest. 
+* credit_note[channel] have been added to Export#CreditNotesRequest.
+* item[channel] have been added to Export#ItemsRequest.
+* item_price[channel] have been added to Export#ItemPricesRequest.
+* channel have been added to Invoice#InvoiceListRequest.
+* channel have been added to Item#ItemListRequest.
+* channel have been added to ItemPrice#ItemPriceListRequest.
+* channel have been added to Plan#PlanListRequest.
+* channel have been added to Subscription#SubscriptionListRequest.
+
+### Existing input parameter changes:
+* item_family_id in Item#CreateRequest has been made as required field.
+
+### Removed enum values:
+* coupon_expired has been removed from EventTypeEnum. 
+
 ### v2.8.0 (2022-03-14)
 * * *
 

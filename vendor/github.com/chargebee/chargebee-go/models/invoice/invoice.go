@@ -69,6 +69,7 @@ type Invoice struct {
 	VoidReasonCode          string                    `json:"void_reason_code"`
 	Deleted                 bool                      `json:"deleted"`
 	VatNumberPrefix         string                    `json:"vat_number_prefix"`
+	Channel                 enum.Channel              `json:"channel"`
 	Object                  string                    `json:"object"`
 }
 type LineItem struct {
@@ -742,9 +743,14 @@ type ListRequestParams struct {
 	DunningStatus  *filter.EnumFilter      `json:"dunning_status,omitempty"`
 	PaymentOwner   *filter.StringFilter    `json:"payment_owner,omitempty"`
 	UpdatedAt      *filter.TimestampFilter `json:"updated_at,omitempty"`
+	Channel        *filter.EnumFilter      `json:"channel,omitempty"`
 	VoidedAt       *filter.TimestampFilter `json:"voided_at,omitempty"`
 	VoidReasonCode *filter.StringFilter    `json:"void_reason_code,omitempty"`
 	SortBy         *filter.SortFilter      `json:"sort_by,omitempty"`
+	Einvoice       *ListEinvoiceParams     `json:"einvoice,omitempty"`
+}
+type ListEinvoiceParams struct {
+	Status *filter.EnumFilter `json:"status,omitempty"`
 }
 type InvoicesForCustomerRequestParams struct {
 	Limit  *int32 `json:"limit,omitempty"`
