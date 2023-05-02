@@ -79,7 +79,7 @@ func main() {
 	}
 
 	if err := i.Err(); err != nil {
-		log.Fatal("Cannot retrieve all payouts: %v", err)
+		log.Fatalf("Cannot retrieve all payouts: %v", err)
 	}
 
 	payoutsReverse := []*stripe.Payout{}
@@ -105,7 +105,7 @@ func main() {
 		transactions, err := GetPayoutTransactions(payout.ID)
 
 		if err != nil {
-			log.Fatal("Cannot get transactions: %v", err)
+			log.Fatalf("Cannot get transactions: %v", err)
 		}
 
 		for _, txn := range transactions {
