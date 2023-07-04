@@ -145,13 +145,24 @@ func main() {
 
 			query := gountries.New()
 
-			full_country_name, err := query.FindCountryByAlpha(user.BillingAddress.Country)
+			full_country_name := ""
 
-			if err != nil {
-				log.Fatalf("Cannot get country name for code: %s %v", user.BillingAddress.Country, err)
+			// Due to following issue: https://github.com/pariz/gountries/issues/30
+			// We have to handle Kosovo in a special way
+
+			if user.BillingAddress.Country == "XK" {
+				full_country_name = "Kosovo"
+			} else {
+				country_lookup_res, err := query.FindCountryByAlpha(user.BillingAddress.Country)
+
+				if err != nil {
+					log.Fatalf("Cannot get country name for code: %s %v", user.BillingAddress.Country, err)
+				}
+
+				full_country_name = country_lookup_res.Name.BaseLang.Common
 			}
 
-			fmt.Printf("Net amount: %v %s Company: %s Country: %s %s\n", PrintAmount(txn.Net), txn.Currency, user.BillingAddress.Company, full_country_name.Name.BaseLang.Common, vatSection)
+			fmt.Printf("Net amount: %v %s Company: %s Country: %s %s\n", PrintAmount(txn.Net), txn.Currency, user.BillingAddress.Company, full_country_name, vatSection)
 		}
 
 		fmt.Printf("\n")
