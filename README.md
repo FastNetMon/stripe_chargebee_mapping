@@ -8,10 +8,16 @@ Tool to enrich Stripe's payouts with customer information and VAT codes from Cha
 CGO_ENABLED=0 go build -o stripe_chargebee_mapping_linux
 ```
 
-# Build on Linux for MacOS / cross compilation
+# Build on Linux for MacOS x86_64 Intel based
 
 ```
-GOOS=darwin GOARCH=amd64 go build -o stripe_chargebee_mapping_macos
+GOOS=darwin GOARCH=amd64 go build -o stripe_chargebee_mapping_macos_amd64
+```
+
+# Build on Linux for MacOS x86_64 Apple CPU based
+
+```
+GOOS=darwin GOARCH=arm64 go build -o stripe_chargebee_mapping_macos_arm64
 ```
 
 # Run
