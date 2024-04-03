@@ -20,6 +20,17 @@ GOOS=darwin GOARCH=amd64 go build -o stripe_chargebee_mapping_macos_amd64
 GOOS=darwin GOARCH=arm64 go build -o stripe_chargebee_mapping_macos_arm64
 ```
 
+# Stripe API key generation.
+
+To use this tool you need to open Stripe interface and generate API access key. To do so open “Developers” on left panel then API key, then “Create restricted key” and after that enable Read permission for following capabilities:
+
+- Balance
+- Customers
+- Payouts
+- Transfers
+
+Then fill in the key name "stripe_chargebee_key" and then click create key. Then save the generated key to file .stripe_key in the home folder. 
+
 # Run
 
 ```
