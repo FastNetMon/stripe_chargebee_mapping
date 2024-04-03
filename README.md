@@ -31,7 +31,7 @@ To use this tool you need to open Stripe interface and generate API access key. 
 
 Then fill in the key name "stripe_chargebee_key" and then click create key. Then save the generated key to file .stripe_key in the home folder. 
 
-# Chargebee ket generation
+# Chargebee key generation
 
 After logging into Chargebee select "Live site / test site", select Live. Settings, Configure Chargebee, API Keys, Add API key, Read Only Key, set flag Restricted, "Allow read only access to transactional data" and select name "chargebee_stripe". After that save the key to file .chargeebee_key in the user home folder. 
 
