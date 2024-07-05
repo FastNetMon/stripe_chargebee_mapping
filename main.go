@@ -123,6 +123,13 @@ func main() {
 				} else if txn.Type == "stripe_fee" {
 					fmt.Printf("Net amount: %v Radar for Fraud teams fee, it's Stripe fee for fraud screening\n", PrintAmount(txn.Net))
 					continue
+				} else if txn.Type == "adjustment" && txn.ReportingCategory == "dispute" {
+					// &{Amount:-206192 AvailableOn:1717696135 Created:1717696135 Currency:gbp
+					// Description:Chargeback withdrawal for ch_xxx ExchangeRate:0 ID:txn_xxx
+					// Fee:2000 FeeDetails:[0x14000d46050] Net:-208192 Recipient: ReportingCategory:dispute
+					// Source:0x14000531570 Status:available Type:adjustment}
+					fmt.Printf("Net amount: %v It's probably chargeback transaction\n", PrintAmount(txn.Net))
+					continue
 				} else {
 					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
