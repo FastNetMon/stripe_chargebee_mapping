@@ -130,6 +130,9 @@ func main() {
 					// Source:0x14000531570 Status:available Type:adjustment}
 					fmt.Printf("Net amount: %v It's probably chargeback transaction\n", PrintAmount(txn.Net))
 					continue
+                } else if txn.Type == "adjustment" && txn.Description == "Contribution from reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
+                    // I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
+                    continue
 				} else {
 					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
