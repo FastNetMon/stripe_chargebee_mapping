@@ -108,11 +108,17 @@ func main() {
                 log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
             }
 
-            fmt.Printf("Date %s Amount: %v %s, Customer: %s VAT: %v\n",
+            if customer.BillingAddress == nil {
+                log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
+                continue
+            }
+
+            fmt.Printf("Date %s Amount: %v %s, Company: %s Country: %s VAT: %v\n",
                 txnDate.Format(time.RFC3339),
 			    txn.Amount/100,
                 txn.CurrencyCode,
-                txn.CustomerId,
+                customer.BillingAddress.Company,
+                customer.BillingAddress.Country,
                 fmt.Sprintf("VAT: %s Validation status: %s", customer.VatNumber, customer.VatNumberStatus),
 		    )
 	    }
