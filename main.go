@@ -113,13 +113,20 @@ func main() {
                 continue
             }
 
-            fmt.Printf("Date %s Amount: %v %s, Company: %s Country: %s VAT: %v\n",
+            vat_info := ""
+
+            // Only for UK based customer we show VAT rate
+            if customer.BillingAddress.Country == "GB" {
+                vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
+            }
+
+            fmt.Printf("Date %s Amount: %v %s, Company: %s Country: %s %v\n",
                 txnDate.Format(time.RFC3339),
 			    txn.Amount/100,
                 txn.CurrencyCode,
                 customer.BillingAddress.Company,
                 customer.BillingAddress.Country,
-                fmt.Sprintf("VAT: %s Validation status: %s", customer.VatNumber, customer.VatNumberStatus),
+                vat_info,
 		    )
 	    }
 	
