@@ -85,6 +85,9 @@ func main() {
             Status: &filter.EnumFilter{
                 Is: transactionEnum.StatusSuccess, // We need only successful ones
             },
+            SortBy: &filter.SortFilter{
+			    Asc:  string("date"),
+		    },
             Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
 	    } 
 
@@ -95,19 +98,14 @@ func main() {
 		    os.Exit(0)
 	    }
 
-	    fmt.Println("Successfully retrieved transactions:")
-	
         for _, entry := range result.List {
 	    	txn := entry.Transaction
 		    txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
-		    fmt.Printf("%+v ID: %s, Amount: %v %s, Status: %s, Date: %s\n",
-                txn,
-			    txn.Id,
-			    txn.Amount,
-			    txn.CurrencyCode,
-			    txn.Status,
-			    txnDate.Format(time.RFC3339),
+            fmt.Printf("Date %s Amount: %v, Customer: %s\n",
+                txnDate.Format(time.RFC3339),
+			    txn.Amount/100,
+                txn.CustomerId,
 		    )
 	    }
 	
