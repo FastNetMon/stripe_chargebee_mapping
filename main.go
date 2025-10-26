@@ -102,10 +102,18 @@ func main() {
 	    	txn := entry.Transaction
 		    txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
-            fmt.Printf("Date %s Amount: %v, Customer: %s\n",
+            customer, err := GetChargebeeUser(txn.CustomerId)
+
+            if err != nil {
+                log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+            }
+
+            fmt.Printf("Date %s Amount: %v %s, Customer: %s VAT: %v\n",
                 txnDate.Format(time.RFC3339),
 			    txn.Amount/100,
+                txn.CurrencyCode,
                 txn.CustomerId,
+                fmt.Sprintf("VAT: %s Validation status: %s", customer.VatNumber, customer.VatNumberStatus),
 		    )
 	    }
 	
