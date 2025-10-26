@@ -13,7 +13,8 @@ import (
 
 	"github.com/chargebee/chargebee-go"
     "github.com/chargebee/chargebee-go/enum"
-	customerAction "github.com/chargebee/chargebee-go/actions/customer"
+	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
+    customerAction "github.com/chargebee/chargebee-go/actions/customer"
 	customer "github.com/chargebee/chargebee-go/models/customer"
     transactionModel "github.com/chargebee/chargebee-go/models/transaction"
     transactionAction "github.com/chargebee/chargebee-go/actions/transaction"
@@ -81,6 +82,9 @@ func main() {
             Gateway: &filter.EnumFilter{
                 Is: enum.GatewayPaypalExpressCheckout,
             },
+            Status: &filter.EnumFilter{
+                Is: transactionEnum.StatusSuccess, // We need only successful ones
+            },
             Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
 	    } 
 
@@ -107,9 +111,9 @@ func main() {
 		    )
 	    }
 	
-    	// Handle Pagination if there are more results
+        // TODO: Pagination when we have more then 100 results is not supported yet
 	    if result.NextOffset != "" {
-		    fmt.Printf("\nNote: There are more results. Use the NextOffset (%s) for the next API call.\n", result.NextOffset)
+		    log.Fatalf("\nNote: There are more results. Use the NextOffset (%s) for the next API call.\n", result.NextOffset)
 	    }
 
         os.Exit(0)
