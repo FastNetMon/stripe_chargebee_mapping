@@ -5,15 +5,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os/user"
+    "os"
+    "os/user"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/chargebee/chargebee-go"
+    "github.com/chargebee/chargebee-go/enum"
 	customerAction "github.com/chargebee/chargebee-go/actions/customer"
 	customer "github.com/chargebee/chargebee-go/models/customer"
-	"github.com/pariz/gountries"
+    transactionModel "github.com/chargebee/chargebee-go/models/transaction"
+    transactionAction "github.com/chargebee/chargebee-go/actions/transaction"
+    "github.com/chargebee/chargebee-go/filter"
+    "github.com/pariz/gountries"
 	"github.com/pkg/errors"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/balancetransaction"
@@ -23,6 +28,7 @@ import (
 
 var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
+var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat or paypal_vat")
 
 func main() {
 	flag.Parse()
@@ -65,6 +71,53 @@ func main() {
 	stripe.DefaultLeveledLogger = &stripe.LeveledLogger{
 		Level: stripe.LevelError,
 	}
+
+    if *report_type == "paypal_vat" {
+        params := &transactionModel.ListRequestParams{
+		    Date: &filter.TimestampFilter{
+			    Between: []int64{int64(*start), int64(*end)},
+		    },
+	        
+            Gateway: &filter.EnumFilter{
+                Is: enum.GatewayPaypalExpressCheckout,
+            },
+            Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
+	    } 
+
+        result, err := transactionAction.List(params).ListRequest()
+
+	    if err != nil {
+		    log.Fatalf("Error retrieving transactions: %v\n", err)
+		    os.Exit(0)
+	    }
+
+	    fmt.Println("Successfully retrieved transactions:")
+	
+        for _, entry := range result.List {
+	    	txn := entry.Transaction
+		    txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
+
+		    fmt.Printf("%+v ID: %s, Amount: %v %s, Status: %s, Date: %s\n",
+                txn,
+			    txn.Id,
+			    txn.Amount,
+			    txn.CurrencyCode,
+			    txn.Status,
+			    txnDate.Format(time.RFC3339),
+		    )
+	    }
+	
+    	// Handle Pagination if there are more results
+	    if result.NextOffset != "" {
+		    fmt.Printf("\nNote: There are more results. Use the NextOffset (%s) for the next API call.\n", result.NextOffset)
+	    }
+
+        os.Exit(0)
+    } else if *report_type == "stripe_vat"  {
+        // Keep going down
+    } else {
+        log.Fatalf("Unknown report type: %s", *report_type)
+    }
 
 	i := payout.List(&stripe.PayoutListParams{ArrivalDateRange: &stripe.RangeQueryParams{
 		GreaterThanOrEqual: int64(*start),

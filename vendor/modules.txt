@@ -1,6 +1,7 @@
 # github.com/chargebee/chargebee-go v2.10.0+incompatible
 github.com/chargebee/chargebee-go
 github.com/chargebee/chargebee-go/actions/customer
+github.com/chargebee/chargebee-go/actions/transaction
 github.com/chargebee/chargebee-go/enum
 github.com/chargebee/chargebee-go/filter
 github.com/chargebee/chargebee-go/models/addon
