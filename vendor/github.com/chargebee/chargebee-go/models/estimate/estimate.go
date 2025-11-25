@@ -2,23 +2,24 @@ package estimate
 
 import (
 	"github.com/chargebee/chargebee-go/enum"
-	contractTermEnum "github.com/chargebee/chargebee-go/models/contractterm/enum"
-	"github.com/chargebee/chargebee-go/models/creditnoteestimate"
-	"github.com/chargebee/chargebee-go/models/invoiceestimate"
-	paymentIntentEnum "github.com/chargebee/chargebee-go/models/paymentintent/enum"
 	"github.com/chargebee/chargebee-go/models/subscriptionestimate"
+	"github.com/chargebee/chargebee-go/models/invoiceestimate"
+	"github.com/chargebee/chargebee-go/models/creditnoteestimate"
 	"github.com/chargebee/chargebee-go/models/unbilledcharge"
+	contractTermEnum "github.com/chargebee/chargebee-go/models/contractterm/enum"
+	paymentIntentEnum "github.com/chargebee/chargebee-go/models/paymentintent/enum"
 )
 
 type Estimate struct {
-	CreatedAt               int64                                      `json:"created_at"`
-	SubscriptionEstimate    *subscriptionestimate.SubscriptionEstimate `json:"subscription_estimate"`
-	InvoiceEstimate         *invoiceestimate.InvoiceEstimate           `json:"invoice_estimate"`
-	InvoiceEstimates        []*invoiceestimate.InvoiceEstimate         `json:"invoice_estimates"`
-	NextInvoiceEstimate     *invoiceestimate.InvoiceEstimate           `json:"next_invoice_estimate"`
-	CreditNoteEstimates     []*creditnoteestimate.CreditNoteEstimate   `json:"credit_note_estimates"`
-	UnbilledChargeEstimates []*unbilledcharge.UnbilledCharge           `json:"unbilled_charge_estimates"`
-	Object                  string                                     `json:"object"`
+	CreatedAt               int64                                        `json:"created_at"`
+	SubscriptionEstimate    *subscriptionestimate.SubscriptionEstimate   `json:"subscription_estimate"`
+	SubscriptionEstimates   []*subscriptionestimate.SubscriptionEstimate `json:"subscription_estimates"`
+	InvoiceEstimate         *invoiceestimate.InvoiceEstimate             `json:"invoice_estimate"`
+	InvoiceEstimates        []*invoiceestimate.InvoiceEstimate           `json:"invoice_estimates"`
+	NextInvoiceEstimate     *invoiceestimate.InvoiceEstimate             `json:"next_invoice_estimate"`
+	CreditNoteEstimates     []*creditnoteestimate.CreditNoteEstimate     `json:"credit_note_estimates"`
+	UnbilledChargeEstimates []*unbilledcharge.UnbilledCharge             `json:"unbilled_charge_estimates"`
+	Object                  string                                       `json:"object"`
 }
 type CreateSubscriptionRequestParams struct {
 	Subscription            *CreateSubscriptionSubscriptionParams      `json:"subscription,omitempty"`
@@ -112,6 +113,7 @@ type CreateSubItemEstimateRequestParams struct {
 	Subscription           *CreateSubItemEstimateSubscriptionParams       `json:"subscription,omitempty"`
 	BillingCycles          *int32                                         `json:"billing_cycles,omitempty"`
 	SubscriptionItems      []*CreateSubItemEstimateSubscriptionItemParams `json:"subscription_items,omitempty"`
+	Discounts              []*CreateSubItemEstimateDiscountParams         `json:"discounts,omitempty"`
 	MandatoryItemsToRemove []string                                       `json:"mandatory_items_to_remove,omitempty"`
 	ItemTiers              []*CreateSubItemEstimateItemTierParams         `json:"item_tiers,omitempty"`
 	TermsToCharge          *int32                                         `json:"terms_to_charge,omitempty"`
@@ -150,6 +152,16 @@ type CreateSubItemEstimateSubscriptionItemParams struct {
 	ChargeOnce         *bool               `json:"charge_once,omitempty"`
 	ItemType           enum.ItemType       `json:"item_type,omitempty"`
 	ChargeOnOption     enum.ChargeOnOption `json:"charge_on_option,omitempty"`
+}
+type CreateSubItemEstimateDiscountParams struct {
+	ApplyOn       enum.ApplyOn      `json:"apply_on"`
+	DurationType  enum.DurationType `json:"duration_type"`
+	Percentage    *float64          `json:"percentage,omitempty"`
+	Amount        *int32            `json:"amount,omitempty"`
+	Period        *int32            `json:"period,omitempty"`
+	PeriodUnit    enum.PeriodUnit   `json:"period_unit,omitempty"`
+	IncludedInMrr *bool             `json:"included_in_mrr,omitempty"`
+	ItemPriceId   string            `json:"item_price_id,omitempty"`
 }
 type CreateSubItemEstimateItemTierParams struct {
 	ItemPriceId           string `json:"item_price_id,omitempty"`
@@ -265,6 +277,7 @@ type CreateSubItemForCustomerEstimateRequestParams struct {
 	InvoiceImmediately     *bool                                                     `json:"invoice_immediately,omitempty"`
 	BillingCycles          *int32                                                    `json:"billing_cycles,omitempty"`
 	SubscriptionItems      []*CreateSubItemForCustomerEstimateSubscriptionItemParams `json:"subscription_items,omitempty"`
+	Discounts              []*CreateSubItemForCustomerEstimateDiscountParams         `json:"discounts,omitempty"`
 	MandatoryItemsToRemove []string                                                  `json:"mandatory_items_to_remove,omitempty"`
 	ItemTiers              []*CreateSubItemForCustomerEstimateItemTierParams         `json:"item_tiers,omitempty"`
 	TermsToCharge          *int32                                                    `json:"terms_to_charge,omitempty"`
@@ -298,6 +311,16 @@ type CreateSubItemForCustomerEstimateSubscriptionItemParams struct {
 	ChargeOnce         *bool               `json:"charge_once,omitempty"`
 	ItemType           enum.ItemType       `json:"item_type,omitempty"`
 	ChargeOnOption     enum.ChargeOnOption `json:"charge_on_option,omitempty"`
+}
+type CreateSubItemForCustomerEstimateDiscountParams struct {
+	ApplyOn       enum.ApplyOn      `json:"apply_on"`
+	DurationType  enum.DurationType `json:"duration_type"`
+	Percentage    *float64          `json:"percentage,omitempty"`
+	Amount        *int32            `json:"amount,omitempty"`
+	Period        *int32            `json:"period,omitempty"`
+	PeriodUnit    enum.PeriodUnit   `json:"period_unit,omitempty"`
+	IncludedInMrr *bool             `json:"included_in_mrr,omitempty"`
+	ItemPriceId   string            `json:"item_price_id,omitempty"`
 }
 type CreateSubItemForCustomerEstimateItemTierParams struct {
 	ItemPriceId           string `json:"item_price_id,omitempty"`
@@ -364,13 +387,14 @@ type UpdateSubscriptionSubscriptionParams struct {
 	TrialEndAction         enum.TrialEndAction       `json:"trial_end_action,omitempty"`
 }
 type UpdateSubscriptionAddonParams struct {
-	Id                 string `json:"id,omitempty"`
-	Quantity           *int32 `json:"quantity,omitempty"`
-	UnitPrice          *int32 `json:"unit_price,omitempty"`
-	BillingCycles      *int32 `json:"billing_cycles,omitempty"`
-	QuantityInDecimal  string `json:"quantity_in_decimal,omitempty"`
-	UnitPriceInDecimal string `json:"unit_price_in_decimal,omitempty"`
-	TrialEnd           *int64 `json:"trial_end,omitempty"`
+	Id                 string             `json:"id,omitempty"`
+	Quantity           *int32             `json:"quantity,omitempty"`
+	UnitPrice          *int32             `json:"unit_price,omitempty"`
+	BillingCycles      *int32             `json:"billing_cycles,omitempty"`
+	QuantityInDecimal  string             `json:"quantity_in_decimal,omitempty"`
+	UnitPriceInDecimal string             `json:"unit_price_in_decimal,omitempty"`
+	TrialEnd           *int64             `json:"trial_end,omitempty"`
+	ProrationType      enum.ProrationType `json:"proration_type,omitempty"`
 }
 type UpdateSubscriptionEventBasedAddonParams struct {
 	Id                  string        `json:"id,omitempty"`
@@ -414,6 +438,7 @@ type UpdateSubscriptionForItemsRequestParams struct {
 	SubscriptionItems      []*UpdateSubscriptionForItemsSubscriptionItemParams `json:"subscription_items,omitempty"`
 	MandatoryItemsToRemove []string                                            `json:"mandatory_items_to_remove,omitempty"`
 	ReplaceItemsList       *bool                                               `json:"replace_items_list,omitempty"`
+	Discounts              []*UpdateSubscriptionForItemsDiscountParams         `json:"discounts,omitempty"`
 	ItemTiers              []*UpdateSubscriptionForItemsItemTierParams         `json:"item_tiers,omitempty"`
 	InvoiceDate            *int64                                              `json:"invoice_date,omitempty"`
 	BillingCycles          *int32                                              `json:"billing_cycles,omitempty"`
@@ -458,6 +483,18 @@ type UpdateSubscriptionForItemsSubscriptionItemParams struct {
 	ChargeOnce         *bool               `json:"charge_once,omitempty"`
 	ChargeOnOption     enum.ChargeOnOption `json:"charge_on_option,omitempty"`
 	ItemType           enum.ItemType       `json:"item_type,omitempty"`
+}
+type UpdateSubscriptionForItemsDiscountParams struct {
+	ApplyOn       enum.ApplyOn       `json:"apply_on"`
+	DurationType  enum.DurationType  `json:"duration_type"`
+	Percentage    *float64           `json:"percentage,omitempty"`
+	Amount        *int32             `json:"amount,omitempty"`
+	Period        *int32             `json:"period,omitempty"`
+	PeriodUnit    enum.PeriodUnit    `json:"period_unit,omitempty"`
+	IncludedInMrr *bool              `json:"included_in_mrr,omitempty"`
+	ItemPriceId   string             `json:"item_price_id,omitempty"`
+	OperationType enum.OperationType `json:"operation_type"`
+	Id            string             `json:"id,omitempty"`
 }
 type UpdateSubscriptionForItemsItemTierParams struct {
 	ItemPriceId           string `json:"item_price_id,omitempty"`
@@ -572,8 +609,9 @@ type PauseSubscriptionRequestParams struct {
 	UnbilledChargesHandling enum.UnbilledChargesHandling         `json:"unbilled_charges_handling,omitempty"`
 }
 type PauseSubscriptionSubscriptionParams struct {
-	PauseDate  *int64 `json:"pause_date,omitempty"`
-	ResumeDate *int64 `json:"resume_date,omitempty"`
+	PauseDate         *int64 `json:"pause_date,omitempty"`
+	ResumeDate        *int64 `json:"resume_date,omitempty"`
+	SkipBillingCycles *int32 `json:"skip_billing_cycles,omitempty"`
 }
 type ResumeSubscriptionRequestParams struct {
 	ResumeOption    enum.ResumeOption                     `json:"resume_option,omitempty"`
@@ -782,11 +820,12 @@ type CreateInvoiceForItemsRequestParams struct {
 	AuthorizationTransactionId string                                      `json:"authorization_transaction_id,omitempty"`
 	PaymentSourceId            string                                      `json:"payment_source_id,omitempty"`
 	AutoCollection             enum.AutoCollection                         `json:"auto_collection,omitempty"`
+	Discounts                  []*CreateInvoiceForItemsDiscountParams      `json:"discounts,omitempty"`
 	ShippingAddress            *CreateInvoiceForItemsShippingAddressParams `json:"shipping_address,omitempty"`
 	InvoiceDate                *int64                                      `json:"invoice_date,omitempty"`
 }
 type CreateInvoiceForItemsInvoiceParams struct {
-	CustomerId     string `json:"customer_id"`
+	CustomerId     string `json:"customer_id,omitempty"`
 	SubscriptionId string `json:"subscription_id,omitempty"`
 	PoNumber       string `json:"po_number,omitempty"`
 }
@@ -826,6 +865,12 @@ type CreateInvoiceForItemsChargeParams struct {
 type CreateInvoiceForItemsNotesToRemoveParams struct {
 	EntityType enum.EntityType `json:"entity_type,omitempty"`
 	EntityId   string          `json:"entity_id,omitempty"`
+}
+type CreateInvoiceForItemsDiscountParams struct {
+	Percentage  *float64     `json:"percentage,omitempty"`
+	Amount      *int32       `json:"amount,omitempty"`
+	ApplyOn     enum.ApplyOn `json:"apply_on"`
+	ItemPriceId string       `json:"item_price_id,omitempty"`
 }
 type CreateInvoiceForItemsShippingAddressParams struct {
 	FirstName        string                `json:"first_name,omitempty"`

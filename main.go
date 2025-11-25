@@ -11,6 +11,10 @@ import (
 	"strings"
 	"time"
 
+        subscription "github.com/chargebee/chargebee-go/models/subscription"
+
+        subscriptionAction "github.com/chargebee/chargebee-go/actions/subscription"
+
 	"github.com/chargebee/chargebee-go"
     "github.com/chargebee/chargebee-go/enum"
 	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
@@ -128,12 +132,21 @@ func main() {
             if err != nil {
                 log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
             }
-                
-            fmt.Printf("Date %s Amount: %.2f %s, Company: %s\n",
+              
+            subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
+
+            if err != nil {
+                 log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
+            }
+
+            fmt.Printf("%+v", subscription)
+
+            fmt.Printf("Date %s Amount: %.2f %s, Company: %s Subscription ID: %s\n",
                 txnDate.Format(time.RFC3339),
                 float64(txn.Amount)/100,
                 txn.CurrencyCode,
                 customer.BillingAddress.Company,
+                txn.SubscriptionId,
             )
         }
 
@@ -396,4 +409,17 @@ func GetChargebeeUser(userID string) (*customer.Customer, error) {
 
         return transactions, nil
     }
+
+
+    // Retrieves subscription from Chargebee
+func GetChargebeeSubscription(subscriptionID string) (*subscription.Subscription, error) {
+
+    subscriptionRetrieved, err := subscriptionAction.Retrieve(subscriptionID).Request()
+
+    if err != nil {
+        return nil, err
+    }
+
+    return subscriptionRetrieved.Subscription, nil
+}
 

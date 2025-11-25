@@ -1,65 +1,76 @@
 package chargebee
 
 import (
-	"github.com/chargebee/chargebee-go/models/addon"
-	"github.com/chargebee/chargebee-go/models/address"
-	"github.com/chargebee/chargebee-go/models/advanceinvoiceschedule"
-	"github.com/chargebee/chargebee-go/models/attacheditem"
-	"github.com/chargebee/chargebee-go/models/card"
-	"github.com/chargebee/chargebee-go/models/comment"
-	"github.com/chargebee/chargebee-go/models/contact"
-	"github.com/chargebee/chargebee-go/models/contractterm"
-	"github.com/chargebee/chargebee-go/models/coupon"
-	"github.com/chargebee/chargebee-go/models/couponcode"
-	"github.com/chargebee/chargebee-go/models/couponset"
-	"github.com/chargebee/chargebee-go/models/creditnote"
-	"github.com/chargebee/chargebee-go/models/customer"
-	"github.com/chargebee/chargebee-go/models/differentialprice"
-	"github.com/chargebee/chargebee-go/models/download"
-	"github.com/chargebee/chargebee-go/models/entitlementoverride"
-	"github.com/chargebee/chargebee-go/models/estimate"
-	"github.com/chargebee/chargebee-go/models/event"
-	"github.com/chargebee/chargebee-go/models/export"
-	"github.com/chargebee/chargebee-go/models/feature"
-	"github.com/chargebee/chargebee-go/models/gift"
-	"github.com/chargebee/chargebee-go/models/hierarchy"
-	"github.com/chargebee/chargebee-go/models/hostedpage"
-	"github.com/chargebee/chargebee-go/models/invoice"
-	"github.com/chargebee/chargebee-go/models/item"
-	"github.com/chargebee/chargebee-go/models/itementitlement"
-	"github.com/chargebee/chargebee-go/models/itemfamily"
-	"github.com/chargebee/chargebee-go/models/itemprice"
-	"github.com/chargebee/chargebee-go/models/order"
-	"github.com/chargebee/chargebee-go/models/paymentintent"
-	"github.com/chargebee/chargebee-go/models/paymentsource"
-	"github.com/chargebee/chargebee-go/models/plan"
-	"github.com/chargebee/chargebee-go/models/portalsession"
-	"github.com/chargebee/chargebee-go/models/promotionalcredit"
-	"github.com/chargebee/chargebee-go/models/quote"
-	"github.com/chargebee/chargebee-go/models/quotedcharge"
-	"github.com/chargebee/chargebee-go/models/quotedsubscription"
-	"github.com/chargebee/chargebee-go/models/quotelinegroup"
-	"github.com/chargebee/chargebee-go/models/resourcemigration"
-	"github.com/chargebee/chargebee-go/models/sitemigrationdetail"
 	"github.com/chargebee/chargebee-go/models/subscription"
-	"github.com/chargebee/chargebee-go/models/subscriptionentitlement"
-	"github.com/chargebee/chargebee-go/models/taxwithheld"
-	"github.com/chargebee/chargebee-go/models/thirdpartypaymentmethod"
-	"github.com/chargebee/chargebee-go/models/timemachine"
+	"github.com/chargebee/chargebee-go/models/contractterm"
+	"github.com/chargebee/chargebee-go/models/discount"
+	"github.com/chargebee/chargebee-go/models/advanceinvoiceschedule"
+	"github.com/chargebee/chargebee-go/models/customer"
+	"github.com/chargebee/chargebee-go/models/hierarchy"
+	"github.com/chargebee/chargebee-go/models/contact"
 	"github.com/chargebee/chargebee-go/models/token"
-	"github.com/chargebee/chargebee-go/models/transaction"
-	"github.com/chargebee/chargebee-go/models/unbilledcharge"
-	"github.com/chargebee/chargebee-go/models/usage"
+	"github.com/chargebee/chargebee-go/models/paymentsource"
+	"github.com/chargebee/chargebee-go/models/thirdpartypaymentmethod"
 	"github.com/chargebee/chargebee-go/models/virtualbankaccount"
+	"github.com/chargebee/chargebee-go/models/card"
+	"github.com/chargebee/chargebee-go/models/promotionalcredit"
+	"github.com/chargebee/chargebee-go/models/invoice"
+	"github.com/chargebee/chargebee-go/models/paymentreferencenumber"
+	"github.com/chargebee/chargebee-go/models/taxwithheld"
+	"github.com/chargebee/chargebee-go/models/creditnote"
+	"github.com/chargebee/chargebee-go/models/unbilledcharge"
+	"github.com/chargebee/chargebee-go/models/order"
+	"github.com/chargebee/chargebee-go/models/gift"
+	"github.com/chargebee/chargebee-go/models/transaction"
+	"github.com/chargebee/chargebee-go/models/hostedpage"
+	"github.com/chargebee/chargebee-go/models/estimate"
+	"github.com/chargebee/chargebee-go/models/quote"
+	"github.com/chargebee/chargebee-go/models/quotedsubscription"
+	"github.com/chargebee/chargebee-go/models/quotedcharge"
+	"github.com/chargebee/chargebee-go/models/quotelinegroup"
+	"github.com/chargebee/chargebee-go/models/plan"
+	"github.com/chargebee/chargebee-go/models/addon"
+	"github.com/chargebee/chargebee-go/models/coupon"
+	"github.com/chargebee/chargebee-go/models/couponset"
+	"github.com/chargebee/chargebee-go/models/couponcode"
+	"github.com/chargebee/chargebee-go/models/address"
+	"github.com/chargebee/chargebee-go/models/usage"
+	"github.com/chargebee/chargebee-go/models/event"
+	"github.com/chargebee/chargebee-go/models/comment"
+	"github.com/chargebee/chargebee-go/models/download"
+	"github.com/chargebee/chargebee-go/models/portalsession"
+	"github.com/chargebee/chargebee-go/models/sitemigrationdetail"
+	"github.com/chargebee/chargebee-go/models/resourcemigration"
+	"github.com/chargebee/chargebee-go/models/timemachine"
+	"github.com/chargebee/chargebee-go/models/export"
+	"github.com/chargebee/chargebee-go/models/paymentintent"
+	"github.com/chargebee/chargebee-go/models/itemfamily"
+	"github.com/chargebee/chargebee-go/models/item"
+	"github.com/chargebee/chargebee-go/models/itemprice"
+	"github.com/chargebee/chargebee-go/models/attacheditem"
+	"github.com/chargebee/chargebee-go/models/differentialprice"
+	"github.com/chargebee/chargebee-go/models/feature"
+	"github.com/chargebee/chargebee-go/models/impactedsubscription"
+	"github.com/chargebee/chargebee-go/models/impacteditem"
+	"github.com/chargebee/chargebee-go/models/subscriptionentitlement"
+	"github.com/chargebee/chargebee-go/models/itementitlement"
+	"github.com/chargebee/chargebee-go/models/inappsubscription"
+	"github.com/chargebee/chargebee-go/models/entitlementoverride"
+	"github.com/chargebee/chargebee-go/models/purchase"
+	"github.com/chargebee/chargebee-go/models/paymentvoucher"
+	"net/http"
+	"strconv"
 )
 
 type ResultList struct {
-	List       []*Result `json:"list"`
-	NextOffset string    `json:"next_offset"`
+	List            []*Result  `json:"list"`
+	NextOffset      string     `json:"next_offset"`
+	responseHeaders http.Header 
 }
 type Result struct {
 	Subscription            *subscription.Subscription                       `json:"subscription,omitempty"`
 	ContractTerm            *contractterm.ContractTerm                       `json:"contract_term,omitempty"`
+	Discount                *discount.Discount                               `json:"discount,omitempty"`
 	AdvanceInvoiceSchedule  *advanceinvoiceschedule.AdvanceInvoiceSchedule   `json:"advance_invoice_schedule,omitempty"`
 	Customer                *customer.Customer                               `json:"customer,omitempty"`
 	Hierarchy               *hierarchy.Hierarchy                             `json:"hierarchy,omitempty"`
@@ -71,6 +82,7 @@ type Result struct {
 	Card                    *card.Card                                       `json:"card,omitempty"`
 	PromotionalCredit       *promotionalcredit.PromotionalCredit             `json:"promotional_credit,omitempty"`
 	Invoice                 *invoice.Invoice                                 `json:"invoice,omitempty"`
+	PaymentReferenceNumber  *paymentreferencenumber.PaymentReferenceNumber   `json:"payment_reference_number,omitempty"`
 	TaxWithheld             *taxwithheld.TaxWithheld                         `json:"tax_withheld,omitempty"`
 	CreditNote              *creditnote.CreditNote                           `json:"credit_note,omitempty"`
 	UnbilledCharge          *unbilledcharge.UnbilledCharge                   `json:"unbilled_charge,omitempty"`
@@ -105,9 +117,14 @@ type Result struct {
 	AttachedItem            *attacheditem.AttachedItem                       `json:"attached_item,omitempty"`
 	DifferentialPrice       *differentialprice.DifferentialPrice             `json:"differential_price,omitempty"`
 	Feature                 *feature.Feature                                 `json:"feature,omitempty"`
+	ImpactedSubscription    *impactedsubscription.ImpactedSubscription       `json:"impacted_subscription,omitempty"`
+	ImpactedItem            *impacteditem.ImpactedItem                       `json:"impacted_item,omitempty"`
 	SubscriptionEntitlement *subscriptionentitlement.SubscriptionEntitlement `json:"subscription_entitlement,omitempty"`
 	ItemEntitlement         *itementitlement.ItemEntitlement                 `json:"item_entitlement,omitempty"`
+	InAppSubscription       *inappsubscription.InAppSubscription             `json:"in_app_subscription,omitempty"`
 	EntitlementOverride     *entitlementoverride.EntitlementOverride         `json:"entitlement_override,omitempty"`
+	Purchase                *purchase.Purchase                               `json:"purchase,omitempty"`
+	PaymentVoucher          *paymentvoucher.PaymentVoucher                   `json:"payment_voucher,omitempty"`
 	UnbilledCharges         []*unbilledcharge.UnbilledCharge                 `json:"unbilled_charges,omitempty"`
 	CreditNotes             []*creditnote.CreditNote                         `json:"credit_notes,omitempty"`
 	AdvanceInvoiceSchedules []*advanceinvoiceschedule.AdvanceInvoiceSchedule `json:"advance_invoice_schedules,omitempty"`
@@ -115,4 +132,35 @@ type Result struct {
 	Downloads               []*download.Download                             `json:"downloads,omitempty"`
 	Invoices                []*invoice.Invoice                               `json:"invoices,omitempty"`
 	DifferentialPrices      []*differentialprice.DifferentialPrice           `json:"differential_prices,omitempty"`
+	InAppSubscriptions      []*inappsubscription.InAppSubscription           `json:"in_app_subscriptions,omitempty"`
+	responseHeaders         http.Header
+}
+
+func (rl *ResultList) GetResponseHeaders() http.Header {
+	return rl.responseHeaders
+}
+
+func (r *Result) GetResponseHeaders() http.Header {
+	return r.responseHeaders
+}
+
+func (r *Result) IsIdempotencyReplayed() bool {
+	value := r.responseHeaders.Get(IdempotencyReplayHeader)
+	replayed, err := strconv.ParseBool(value)
+	if err != nil {
+		return false
+	}
+	return replayed
+}
+
+type ResponseMeta struct {
+	Headers    http.Header
+	Status     string
+	StatusCode int
+}
+
+type CBResponse struct {
+	Body []byte
+	ResponseMeta
+
 }

@@ -10,23 +10,40 @@ import (
 )
 
 //Do is used to execute an API Request.
-func Do(req *http.Request) (string, error) {
-	if httpClient == nil {
-		httpClient = NewDefaultHTTPClient()
+func Do(req *http.Request) (*CBResponse, error) {
+
+	var client *http.Client
+	if httpClient != nil {
+		client = httpClient
+	} else {
+		client = &http.Client{Timeout: TotalHTTPTimeout}
 	}
-	response, err := httpClient.Do(req)
+
+	response, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+
 	defer response.Body.Close()
 	resBody, err := ioutil.ReadAll(response.Body)
+
+	cbResponse := &CBResponse{
+		ResponseMeta: ResponseMeta{
+			Headers:    response.Header,
+			Status:     response.Status,
+			StatusCode: response.StatusCode,
+		},
+		Body: resBody,
+	}
+
 	if err != nil {
-		return "", err
+		return cbResponse, err
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return "", ErrorHandling(resBody)
+		return cbResponse, ErrorHandling(resBody)
 	}
-	return string(resBody), nil
+
+	return cbResponse, nil
 }
 func ErrorHandling(resBody []byte) error {
 	cbErr := &Error{}

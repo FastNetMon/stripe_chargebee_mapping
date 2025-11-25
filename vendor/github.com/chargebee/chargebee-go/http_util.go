@@ -1,6 +1,7 @@
 package chargebee
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -17,6 +18,7 @@ type RequestObj struct {
 	Method string
 	Path   string
 	Header map[string]string
+	Context context.Context `form:"-"`
 }
 
 func basicAuth(key string) string {
@@ -26,9 +28,11 @@ func basicAuth(key string) string {
 //Send prepares a RequestObj for Request operation.
 func Send(method string, path string, params interface{}) RequestObj {
 	var form *url.Values
+
 	if params != nil {
 		form = SerializeParams(params)
 	}
+
 	return RequestObj{
 		Params: form,
 		Method: method,
@@ -42,6 +46,7 @@ func SendList(method string, path string, params interface{}) RequestObj {
 	if params != nil {
 		form = SerializeListParams(params)
 	}
+
 	return RequestObj{
 		Params: form,
 		Method: method,
@@ -65,6 +70,24 @@ func (request RequestObj) Headers(key string, value string) RequestObj {
 	request.Header[key] = value
 	return request
 }
+
+// This is used to add idempotency key .
+func (request RequestObj) SetIdempotencyKey(idempotencyKey string) RequestObj {
+	if request.Header == nil {
+		request.Header = make(map[string]string)
+	}
+	request.Header[IdempotencyHeader] = idempotencyKey
+	return request
+}
+
+// Context used for request. It may carry deadlines, cancelation signals,
+// and other request-scoped values across API boundaries and between
+// processes.
+func (request RequestObj) Contexts(ctx context.Context) RequestObj {
+	request.Context =  ctx
+	return request
+}
+
 func newRequest(env Environment, method string, path string, body io.Reader, headers map[string]string) (*http.Request, error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path

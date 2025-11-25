@@ -4,6 +4,7 @@ type Gateway string
 
 const (
 	GatewayChargebee             Gateway = "chargebee"
+	GatewayChargebeePayments     Gateway = "chargebee_payments"
 	GatewayStripe                Gateway = "stripe"
 	GatewayWepay                 Gateway = "wepay"
 	GatewayBraintree             Gateway = "braintree"
@@ -44,5 +45,12 @@ const (
 	GatewayMollie                Gateway = "mollie"
 	GatewayQuickbooks            Gateway = "quickbooks"
 	GatewayRazorpay              Gateway = "razorpay"
+	GatewayGlobalPayments        Gateway = "global_payments"
+	GatewayBankOfAmerica         Gateway = "bank_of_america"
+	GatewayEcentric              Gateway = "ecentric"
+	GatewayMetricsGlobal         Gateway = "metrics_global"
+	GatewayWindcave              Gateway = "windcave"
+	GatewayPayCom                Gateway = "pay_com"
+	GatewayEbanx                 Gateway = "ebanx"
 	GatewayNotApplicable         Gateway = "not_applicable"
 )

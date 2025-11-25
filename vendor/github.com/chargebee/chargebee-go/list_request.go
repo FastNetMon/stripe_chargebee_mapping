@@ -10,11 +10,20 @@ func (request RequestObj) ListRequestWithEnv(env Environment) (*ResultList, erro
 	if err != nil {
 		panic(err)
 	}
-	res, err1 := Do(req)
-	result := &ResultList{}
-	if err1 != nil {
-		return result, err1
+	if request.Context != nil {
+		req = req.WithContext(request.Context)
 	}
-	err1 = UnmarshalJSON([]byte(res), result)
+	res, requestError := Do(req)
+	result := &ResultList{}
+
+	if requestError != nil {
+		return result, requestError
+	}
+
+	if err := UnmarshalJSON(res.Body, result); err != nil {
+		return result, err
+	}
+
+	result.responseHeaders = res.Headers
 	return result, nil
 }

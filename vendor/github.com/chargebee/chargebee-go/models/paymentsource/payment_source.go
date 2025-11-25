@@ -22,11 +22,15 @@ type PaymentSource struct {
 	IssuingCountry   string                   `json:"issuing_country"`
 	Card             *Card                    `json:"card"`
 	BankAccount      *BankAccount             `json:"bank_account"`
+	Boleto           *CustVoucherSource       `json:"boleto"`
+	BillingAddress   *BillingAddress          `json:"billing_address"`
 	AmazonPayment    *AmazonPayment           `json:"amazon_payment"`
 	Upi              *Upi                     `json:"upi"`
 	Paypal           *Paypal                  `json:"paypal"`
+	Venmo            *Venmo                   `json:"venmo"`
 	Mandates         []*Mandate               `json:"mandates"`
 	Deleted          bool                     `json:"deleted"`
+	BusinessEntityId string                   `json:"business_entity_id"`
 	Object           string                   `json:"object"`
 }
 type Card struct {
@@ -53,6 +57,7 @@ type BankAccount struct {
 	NameOnAccount     string                 `json:"name_on_account"`
 	FirstName         string                 `json:"first_name"`
 	LastName          string                 `json:"last_name"`
+	DirectDebitScheme enum.DirectDebitScheme `json:"direct_debit_scheme"`
 	BankName          string                 `json:"bank_name"`
 	MandateId         string                 `json:"mandate_id"`
 	AccountType       enum.AccountType       `json:"account_type"`
@@ -60,6 +65,30 @@ type BankAccount struct {
 	AccountHolderType enum.AccountHolderType `json:"account_holder_type"`
 	Email             string                 `json:"email"`
 	Object            string                 `json:"object"`
+}
+type CustVoucherSource struct {
+	Last4     string `json:"last4"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Object    string `json:"object"`
+}
+type BillingAddress struct {
+	FirstName        string                `json:"first_name"`
+	LastName         string                `json:"last_name"`
+	Email            string                `json:"email"`
+	Company          string                `json:"company"`
+	Phone            string                `json:"phone"`
+	Line1            string                `json:"line1"`
+	Line2            string                `json:"line2"`
+	Line3            string                `json:"line3"`
+	City             string                `json:"city"`
+	StateCode        string                `json:"state_code"`
+	State            string                `json:"state"`
+	Country          string                `json:"country"`
+	Zip              string                `json:"zip"`
+	ValidationStatus enum.ValidationStatus `json:"validation_status"`
+	Object           string                `json:"object"`
 }
 type AmazonPayment struct {
 	Email       string `json:"email"`
@@ -74,6 +103,10 @@ type Paypal struct {
 	Email       string `json:"email"`
 	AgreementId string `json:"agreement_id"`
 	Object      string `json:"object"`
+}
+type Venmo struct {
+	UserName string `json:"user_name"`
+	Object   string `json:"object"`
 }
 type Mandate struct {
 	Id             string `json:"id"`
@@ -118,6 +151,16 @@ type CreateUsingPaymentIntentPaymentIntentParams struct {
 	GwPaymentMethodId     string                              `json:"gw_payment_method_id,omitempty"`
 	AdditionalInfo        map[string]interface{}              `json:"additional_info,omitempty"`
 	AdditionalInformation map[string]interface{}              `json:"additional_information,omitempty"`
+}
+type CreateVoucherPaymentSourceRequestParams struct {
+	CustomerId           string                                                `json:"customer_id"`
+	VoucherPaymentSource *CreateVoucherPaymentSourceVoucherPaymentSourceParams `json:"voucher_payment_source,omitempty"`
+}
+type CreateVoucherPaymentSourceVoucherPaymentSourceParams struct {
+	VoucherType      enum.VoucherType       `json:"voucher_type"`
+	GatewayAccountId string                 `json:"gateway_account_id,omitempty"`
+	TaxId            string                 `json:"tax_id,omitempty"`
+	BillingAddress   map[string]interface{} `json:"billing_address,omitempty"`
 }
 type CreateCardRequestParams struct {
 	CustomerId                  string                `json:"customer_id"`
@@ -171,17 +214,18 @@ type UpdateCardRequestParams struct {
 	ReferenceTransaction string                 `json:"reference_transaction,omitempty"`
 }
 type UpdateCardCardParams struct {
-	FirstName        string `json:"first_name,omitempty"`
-	LastName         string `json:"last_name,omitempty"`
-	ExpiryMonth      *int32 `json:"expiry_month,omitempty"`
-	ExpiryYear       *int32 `json:"expiry_year,omitempty"`
-	BillingAddr1     string `json:"billing_addr1,omitempty"`
-	BillingAddr2     string `json:"billing_addr2,omitempty"`
-	BillingCity      string `json:"billing_city,omitempty"`
-	BillingZip       string `json:"billing_zip,omitempty"`
-	BillingStateCode string `json:"billing_state_code,omitempty"`
-	BillingState     string `json:"billing_state,omitempty"`
-	BillingCountry   string `json:"billing_country,omitempty"`
+	FirstName             string                 `json:"first_name,omitempty"`
+	LastName              string                 `json:"last_name,omitempty"`
+	ExpiryMonth           *int32                 `json:"expiry_month,omitempty"`
+	ExpiryYear            *int32                 `json:"expiry_year,omitempty"`
+	BillingAddr1          string                 `json:"billing_addr1,omitempty"`
+	BillingAddr2          string                 `json:"billing_addr2,omitempty"`
+	BillingCity           string                 `json:"billing_city,omitempty"`
+	BillingZip            string                 `json:"billing_zip,omitempty"`
+	BillingStateCode      string                 `json:"billing_state_code,omitempty"`
+	BillingState          string                 `json:"billing_state,omitempty"`
+	BillingCountry        string                 `json:"billing_country,omitempty"`
+	AdditionalInformation map[string]interface{} `json:"additional_information,omitempty"`
 }
 type UpdateBankAccountRequestParams struct {
 	BankAccount *UpdateBankAccountBankAccountParams `json:"bank_account,omitempty"`

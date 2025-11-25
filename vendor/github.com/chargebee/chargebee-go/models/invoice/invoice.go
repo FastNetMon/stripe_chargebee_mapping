@@ -3,74 +3,79 @@ package invoice
 import (
 	"github.com/chargebee/chargebee-go/enum"
 	"github.com/chargebee/chargebee-go/filter"
+	paymentIntentEnum "github.com/chargebee/chargebee-go/models/paymentintent/enum"
+	paymentReferenceNumberEnum "github.com/chargebee/chargebee-go/models/paymentreferencenumber/enum"
+	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
 	creditNoteEnum "github.com/chargebee/chargebee-go/models/creditnote/enum"
 	invoiceEnum "github.com/chargebee/chargebee-go/models/invoice/enum"
-	paymentIntentEnum "github.com/chargebee/chargebee-go/models/paymentintent/enum"
-	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
 )
 
 type Invoice struct {
-	Id                      string                    `json:"id"`
-	PoNumber                string                    `json:"po_number"`
-	CustomerId              string                    `json:"customer_id"`
-	SubscriptionId          string                    `json:"subscription_id"`
-	Recurring               bool                      `json:"recurring"`
-	Status                  invoiceEnum.Status        `json:"status"`
-	VatNumber               string                    `json:"vat_number"`
-	PriceType               enum.PriceType            `json:"price_type"`
-	Date                    int64                     `json:"date"`
-	DueDate                 int64                     `json:"due_date"`
-	NetTermDays             int32                     `json:"net_term_days"`
-	ExchangeRate            float64                   `json:"exchange_rate"`
-	CurrencyCode            string                    `json:"currency_code"`
-	Total                   int32                     `json:"total"`
-	AmountPaid              int32                     `json:"amount_paid"`
-	AmountAdjusted          int32                     `json:"amount_adjusted"`
-	WriteOffAmount          int32                     `json:"write_off_amount"`
-	CreditsApplied          int32                     `json:"credits_applied"`
-	AmountDue               int32                     `json:"amount_due"`
-	PaidAt                  int64                     `json:"paid_at"`
-	DunningStatus           invoiceEnum.DunningStatus `json:"dunning_status"`
-	NextRetryAt             int64                     `json:"next_retry_at"`
-	VoidedAt                int64                     `json:"voided_at"`
-	ResourceVersion         int64                     `json:"resource_version"`
-	UpdatedAt               int64                     `json:"updated_at"`
-	SubTotal                int32                     `json:"sub_total"`
-	SubTotalInLocalCurrency int32                     `json:"sub_total_in_local_currency"`
-	TotalInLocalCurrency    int32                     `json:"total_in_local_currency"`
-	LocalCurrencyCode       string                    `json:"local_currency_code"`
-	Tax                     int32                     `json:"tax"`
-	FirstInvoice            bool                      `json:"first_invoice"`
-	NewSalesAmount          int32                     `json:"new_sales_amount"`
-	HasAdvanceCharges       bool                      `json:"has_advance_charges"`
-	TermFinalized           bool                      `json:"term_finalized"`
-	IsGifted                bool                      `json:"is_gifted"`
-	GeneratedAt             int64                     `json:"generated_at"`
-	ExpectedPaymentDate     int64                     `json:"expected_payment_date"`
-	AmountToCollect         int32                     `json:"amount_to_collect"`
-	RoundOffAmount          int32                     `json:"round_off_amount"`
-	LineItems               []*LineItem               `json:"line_items"`
-	Discounts               []*Discount               `json:"discounts"`
-	LineItemDiscounts       []*LineItemDiscount       `json:"line_item_discounts"`
-	Taxes                   []*Tax                    `json:"taxes"`
-	LineItemTaxes           []*LineItemTax            `json:"line_item_taxes"`
-	LineItemTiers           []*LineItemTier           `json:"line_item_tiers"`
-	LinkedPayments          []*LinkedPayment          `json:"linked_payments"`
-	DunningAttempts         []*DunningAttempt         `json:"dunning_attempts"`
-	AppliedCredits          []*AppliedCredit          `json:"applied_credits"`
-	AdjustmentCreditNotes   []*AdjustmentCreditNote   `json:"adjustment_credit_notes"`
-	IssuedCreditNotes       []*IssuedCreditNote       `json:"issued_credit_notes"`
-	LinkedOrders            []*LinkedOrder            `json:"linked_orders"`
-	Notes                   []*Note                   `json:"notes"`
-	ShippingAddress         *ShippingAddress          `json:"shipping_address"`
-	BillingAddress          *BillingAddress           `json:"billing_address"`
-	Einvoice                *Einvoice                 `json:"einvoice"`
-	PaymentOwner            string                    `json:"payment_owner"`
-	VoidReasonCode          string                    `json:"void_reason_code"`
-	Deleted                 bool                      `json:"deleted"`
-	VatNumberPrefix         string                    `json:"vat_number_prefix"`
-	Channel                 enum.Channel              `json:"channel"`
-	Object                  string                    `json:"object"`
+	Id                        string                    `json:"id"`
+	PoNumber                  string                    `json:"po_number"`
+	CustomerId                string                    `json:"customer_id"`
+	SubscriptionId            string                    `json:"subscription_id"`
+	Recurring                 bool                      `json:"recurring"`
+	Status                    invoiceEnum.Status        `json:"status"`
+	VatNumber                 string                    `json:"vat_number"`
+	PriceType                 enum.PriceType            `json:"price_type"`
+	Date                      int64                     `json:"date"`
+	DueDate                   int64                     `json:"due_date"`
+	NetTermDays               int32                     `json:"net_term_days"`
+	ExchangeRate              float64                   `json:"exchange_rate"`
+	CurrencyCode              string                    `json:"currency_code"`
+	Total                     int32                     `json:"total"`
+	AmountPaid                int32                     `json:"amount_paid"`
+	AmountAdjusted            int32                     `json:"amount_adjusted"`
+	WriteOffAmount            int32                     `json:"write_off_amount"`
+	CreditsApplied            int32                     `json:"credits_applied"`
+	AmountDue                 int32                     `json:"amount_due"`
+	PaidAt                    int64                     `json:"paid_at"`
+	DunningStatus             invoiceEnum.DunningStatus `json:"dunning_status"`
+	NextRetryAt               int64                     `json:"next_retry_at"`
+	VoidedAt                  int64                     `json:"voided_at"`
+	ResourceVersion           int64                     `json:"resource_version"`
+	UpdatedAt                 int64                     `json:"updated_at"`
+	SubTotal                  int32                     `json:"sub_total"`
+	SubTotalInLocalCurrency   int32                     `json:"sub_total_in_local_currency"`
+	TotalInLocalCurrency      int32                     `json:"total_in_local_currency"`
+	LocalCurrencyCode         string                    `json:"local_currency_code"`
+	Tax                       int32                     `json:"tax"`
+	LocalCurrencyExchangeRate float64                   `json:"local_currency_exchange_rate"`
+	FirstInvoice              bool                      `json:"first_invoice"`
+	NewSalesAmount            int32                     `json:"new_sales_amount"`
+	HasAdvanceCharges         bool                      `json:"has_advance_charges"`
+	TermFinalized             bool                      `json:"term_finalized"`
+	IsGifted                  bool                      `json:"is_gifted"`
+	GeneratedAt               int64                     `json:"generated_at"`
+	ExpectedPaymentDate       int64                     `json:"expected_payment_date"`
+	AmountToCollect           int32                     `json:"amount_to_collect"`
+	RoundOffAmount            int32                     `json:"round_off_amount"`
+	LineItems                 []*LineItem               `json:"line_items"`
+	Discounts                 []*Discount               `json:"discounts"`
+	LineItemDiscounts         []*LineItemDiscount       `json:"line_item_discounts"`
+	Taxes                     []*Tax                    `json:"taxes"`
+	LineItemTaxes             []*LineItemTax            `json:"line_item_taxes"`
+	LineItemTiers             []*LineItemTier           `json:"line_item_tiers"`
+	LinkedPayments            []*LinkedPayment          `json:"linked_payments"`
+	DunningAttempts           []*DunningAttempt         `json:"dunning_attempts"`
+	AppliedCredits            []*AppliedCredit          `json:"applied_credits"`
+	AdjustmentCreditNotes     []*AdjustmentCreditNote   `json:"adjustment_credit_notes"`
+	IssuedCreditNotes         []*IssuedCreditNote       `json:"issued_credit_notes"`
+	LinkedOrders              []*LinkedOrder            `json:"linked_orders"`
+	Notes                     []*Note                   `json:"notes"`
+	ShippingAddress           *ShippingAddress          `json:"shipping_address"`
+	StatementDescriptor       *StatementDescriptor      `json:"statement_descriptor"`
+	BillingAddress            *BillingAddress           `json:"billing_address"`
+	Einvoice                  *Einvoice                 `json:"einvoice"`
+	PaymentOwner              string                    `json:"payment_owner"`
+	VoidReasonCode            string                    `json:"void_reason_code"`
+	Deleted                   bool                      `json:"deleted"`
+	TaxCategory               string                    `json:"tax_category"`
+	VatNumberPrefix           string                    `json:"vat_number_prefix"`
+	Channel                   enum.Channel              `json:"channel"`
+	BusinessEntityId          string                    `json:"business_entity_id"`
+	Object                    string                    `json:"object"`
 }
 type LineItem struct {
 	Id                      string                         `json:"id"`
@@ -89,6 +94,7 @@ type LineItem struct {
 	AmountInDecimal         string                         `json:"amount_in_decimal"`
 	DiscountAmount          int32                          `json:"discount_amount"`
 	ItemLevelDiscountAmount int32                          `json:"item_level_discount_amount"`
+	ReferenceLineItemId     string                         `json:"reference_line_item_id"`
 	Description             string                         `json:"description"`
 	EntityDescription       string                         `json:"entity_description"`
 	EntityType              invoiceEnum.LineItemEntityType `json:"entity_type"`
@@ -98,11 +104,12 @@ type LineItem struct {
 	Object                  string                         `json:"object"`
 }
 type Discount struct {
-	Amount      int32                          `json:"amount"`
-	Description string                         `json:"description"`
-	EntityType  invoiceEnum.DiscountEntityType `json:"entity_type"`
-	EntityId    string                         `json:"entity_id"`
-	Object      string                         `json:"object"`
+	Amount        int32                          `json:"amount"`
+	Description   string                         `json:"description"`
+	EntityType    invoiceEnum.DiscountEntityType `json:"entity_type"`
+	EntityId      string                         `json:"entity_id"`
+	CouponSetCode string                         `json:"coupon_set_code"`
+	Object        string                         `json:"object"`
 }
 type LineItemDiscount struct {
 	LineItemId     string                                   `json:"line_item_id"`
@@ -223,7 +230,14 @@ type ShippingAddress struct {
 	Country          string                `json:"country"`
 	Zip              string                `json:"zip"`
 	ValidationStatus enum.ValidationStatus `json:"validation_status"`
+	Index            int32                 `json:"index"`
 	Object           string                `json:"object"`
+}
+type StatementDescriptor struct {
+	Id             string `json:"id"`
+	Descriptor     string `json:"descriptor"`
+	AdditionalInfo string `json:"additional_info"`
+	Object         string `json:"object"`
 }
 type BillingAddress struct {
 	FirstName        string                `json:"first_name"`
@@ -243,35 +257,38 @@ type BillingAddress struct {
 	Object           string                `json:"object"`
 }
 type Einvoice struct {
-	Id      string                     `json:"id"`
-	Status  invoiceEnum.EinvoiceStatus `json:"status"`
-	Message string                     `json:"message"`
-	Object  string                     `json:"object"`
+	Id              string                     `json:"id"`
+	ReferenceNumber string                     `json:"reference_number"`
+	Status          invoiceEnum.EinvoiceStatus `json:"status"`
+	Message         string                     `json:"message"`
+	Object          string                     `json:"object"`
 }
 type CreateRequestParams struct {
-	CustomerId                  string                       `json:"customer_id,omitempty"`
-	SubscriptionId              string                       `json:"subscription_id,omitempty"`
-	CurrencyCode                string                       `json:"currency_code,omitempty"`
-	Addons                      []*CreateAddonParams         `json:"addons,omitempty"`
-	InvoiceDate                 *int64                       `json:"invoice_date,omitempty"`
-	Charges                     []*CreateChargeParams        `json:"charges,omitempty"`
-	InvoiceNote                 string                       `json:"invoice_note,omitempty"`
-	RemoveGeneralNote           *bool                        `json:"remove_general_note,omitempty"`
-	NotesToRemove               []*CreateNotesToRemoveParams `json:"notes_to_remove,omitempty"`
-	PoNumber                    string                       `json:"po_number,omitempty"`
-	Coupon                      string                       `json:"coupon,omitempty"`
-	CouponIds                   []string                     `json:"coupon_ids,omitempty"`
-	AuthorizationTransactionId  string                       `json:"authorization_transaction_id,omitempty"`
-	PaymentSourceId             string                       `json:"payment_source_id,omitempty"`
-	AutoCollection              enum.AutoCollection          `json:"auto_collection,omitempty"`
-	ShippingAddress             *CreateShippingAddressParams `json:"shipping_address,omitempty"`
-	Card                        *CreateCardParams            `json:"card,omitempty"`
-	BankAccount                 *CreateBankAccountParams     `json:"bank_account,omitempty"`
-	TokenId                     string                       `json:"token_id,omitempty"`
-	PaymentMethod               *CreatePaymentMethodParams   `json:"payment_method,omitempty"`
-	PaymentIntent               *CreatePaymentIntentParams   `json:"payment_intent,omitempty"`
-	ReplacePrimaryPaymentSource *bool                        `json:"replace_primary_payment_source,omitempty"`
-	RetainPaymentSource         *bool                        `json:"retain_payment_source,omitempty"`
+	CustomerId                  string                           `json:"customer_id,omitempty"`
+	SubscriptionId              string                           `json:"subscription_id,omitempty"`
+	CurrencyCode                string                           `json:"currency_code,omitempty"`
+	Addons                      []*CreateAddonParams             `json:"addons,omitempty"`
+	InvoiceDate                 *int64                           `json:"invoice_date,omitempty"`
+	Charges                     []*CreateChargeParams            `json:"charges,omitempty"`
+	InvoiceNote                 string                           `json:"invoice_note,omitempty"`
+	RemoveGeneralNote           *bool                            `json:"remove_general_note,omitempty"`
+	NotesToRemove               []*CreateNotesToRemoveParams     `json:"notes_to_remove,omitempty"`
+	PoNumber                    string                           `json:"po_number,omitempty"`
+	Coupon                      string                           `json:"coupon,omitempty"`
+	CouponIds                   []string                         `json:"coupon_ids,omitempty"`
+	AuthorizationTransactionId  string                           `json:"authorization_transaction_id,omitempty"`
+	PaymentSourceId             string                           `json:"payment_source_id,omitempty"`
+	AutoCollection              enum.AutoCollection              `json:"auto_collection,omitempty"`
+	ShippingAddress             *CreateShippingAddressParams     `json:"shipping_address,omitempty"`
+	StatementDescriptor         *CreateStatementDescriptorParams `json:"statement_descriptor,omitempty"`
+	Card                        *CreateCardParams                `json:"card,omitempty"`
+	BankAccount                 *CreateBankAccountParams         `json:"bank_account,omitempty"`
+	TokenId                     string                           `json:"token_id,omitempty"`
+	PaymentMethod               *CreatePaymentMethodParams       `json:"payment_method,omitempty"`
+	PaymentIntent               *CreatePaymentIntentParams       `json:"payment_intent,omitempty"`
+	ReplacePrimaryPaymentSource *bool                            `json:"replace_primary_payment_source,omitempty"`
+	RetainPaymentSource         *bool                            `json:"retain_payment_source,omitempty"`
+	PaymentInitiator            enum.PaymentInitiator            `json:"payment_initiator,omitempty"`
 }
 type CreateAddonParams struct {
 	Id                 string `json:"id,omitempty"`
@@ -316,6 +333,10 @@ type CreateShippingAddressParams struct {
 	Zip              string                `json:"zip,omitempty"`
 	Country          string                `json:"country,omitempty"`
 	ValidationStatus enum.ValidationStatus `json:"validation_status,omitempty"`
+}
+type CreateStatementDescriptorParams struct {
+	Descriptor     string `json:"descriptor,omitempty"`
+	AdditionalInfo string `json:"additional_info,omitempty"`
 }
 type CreateCardParams struct {
 	Gateway               enum.Gateway           `json:"gateway,omitempty"`
@@ -375,30 +396,32 @@ type CreatePaymentIntentParams struct {
 	AdditionalInformation map[string]interface{}              `json:"additional_information,omitempty"`
 }
 type CreateForChargeItemsAndChargesRequestParams struct {
-	CustomerId                  string                                               `json:"customer_id,omitempty"`
-	SubscriptionId              string                                               `json:"subscription_id,omitempty"`
-	CurrencyCode                string                                               `json:"currency_code,omitempty"`
-	ItemPrices                  []*CreateForChargeItemsAndChargesItemPriceParams     `json:"item_prices,omitempty"`
-	ItemTiers                   []*CreateForChargeItemsAndChargesItemTierParams      `json:"item_tiers,omitempty"`
-	Charges                     []*CreateForChargeItemsAndChargesChargeParams        `json:"charges,omitempty"`
-	InvoiceNote                 string                                               `json:"invoice_note,omitempty"`
-	RemoveGeneralNote           *bool                                                `json:"remove_general_note,omitempty"`
-	NotesToRemove               []*CreateForChargeItemsAndChargesNotesToRemoveParams `json:"notes_to_remove,omitempty"`
-	PoNumber                    string                                               `json:"po_number,omitempty"`
-	Coupon                      string                                               `json:"coupon,omitempty"`
-	CouponIds                   []string                                             `json:"coupon_ids,omitempty"`
-	AuthorizationTransactionId  string                                               `json:"authorization_transaction_id,omitempty"`
-	PaymentSourceId             string                                               `json:"payment_source_id,omitempty"`
-	AutoCollection              enum.AutoCollection                                  `json:"auto_collection,omitempty"`
-	InvoiceDate                 *int64                                               `json:"invoice_date,omitempty"`
-	ShippingAddress             *CreateForChargeItemsAndChargesShippingAddressParams `json:"shipping_address,omitempty"`
-	Card                        *CreateForChargeItemsAndChargesCardParams            `json:"card,omitempty"`
-	BankAccount                 *CreateForChargeItemsAndChargesBankAccountParams     `json:"bank_account,omitempty"`
-	TokenId                     string                                               `json:"token_id,omitempty"`
-	PaymentMethod               *CreateForChargeItemsAndChargesPaymentMethodParams   `json:"payment_method,omitempty"`
-	PaymentIntent               *CreateForChargeItemsAndChargesPaymentIntentParams   `json:"payment_intent,omitempty"`
-	ReplacePrimaryPaymentSource *bool                                                `json:"replace_primary_payment_source,omitempty"`
-	RetainPaymentSource         *bool                                                `json:"retain_payment_source,omitempty"`
+	CustomerId                  string                                                   `json:"customer_id,omitempty"`
+	SubscriptionId              string                                                   `json:"subscription_id,omitempty"`
+	CurrencyCode                string                                                   `json:"currency_code,omitempty"`
+	ItemPrices                  []*CreateForChargeItemsAndChargesItemPriceParams         `json:"item_prices,omitempty"`
+	ItemTiers                   []*CreateForChargeItemsAndChargesItemTierParams          `json:"item_tiers,omitempty"`
+	Charges                     []*CreateForChargeItemsAndChargesChargeParams            `json:"charges,omitempty"`
+	InvoiceNote                 string                                                   `json:"invoice_note,omitempty"`
+	RemoveGeneralNote           *bool                                                    `json:"remove_general_note,omitempty"`
+	NotesToRemove               []*CreateForChargeItemsAndChargesNotesToRemoveParams     `json:"notes_to_remove,omitempty"`
+	PoNumber                    string                                                   `json:"po_number,omitempty"`
+	Coupon                      string                                                   `json:"coupon,omitempty"`
+	CouponIds                   []string                                                 `json:"coupon_ids,omitempty"`
+	AuthorizationTransactionId  string                                                   `json:"authorization_transaction_id,omitempty"`
+	PaymentSourceId             string                                                   `json:"payment_source_id,omitempty"`
+	AutoCollection              enum.AutoCollection                                      `json:"auto_collection,omitempty"`
+	Discounts                   []*CreateForChargeItemsAndChargesDiscountParams          `json:"discounts,omitempty"`
+	InvoiceDate                 *int64                                                   `json:"invoice_date,omitempty"`
+	ShippingAddress             *CreateForChargeItemsAndChargesShippingAddressParams     `json:"shipping_address,omitempty"`
+	StatementDescriptor         *CreateForChargeItemsAndChargesStatementDescriptorParams `json:"statement_descriptor,omitempty"`
+	Card                        *CreateForChargeItemsAndChargesCardParams                `json:"card,omitempty"`
+	BankAccount                 *CreateForChargeItemsAndChargesBankAccountParams         `json:"bank_account,omitempty"`
+	TokenId                     string                                                   `json:"token_id,omitempty"`
+	PaymentMethod               *CreateForChargeItemsAndChargesPaymentMethodParams       `json:"payment_method,omitempty"`
+	PaymentIntent               *CreateForChargeItemsAndChargesPaymentIntentParams       `json:"payment_intent,omitempty"`
+	ReplacePrimaryPaymentSource *bool                                                    `json:"replace_primary_payment_source,omitempty"`
+	RetainPaymentSource         *bool                                                    `json:"retain_payment_source,omitempty"`
 }
 type CreateForChargeItemsAndChargesItemPriceParams struct {
 	ItemPriceId        string `json:"item_price_id,omitempty"`
@@ -437,6 +460,12 @@ type CreateForChargeItemsAndChargesNotesToRemoveParams struct {
 	EntityType enum.EntityType `json:"entity_type,omitempty"`
 	EntityId   string          `json:"entity_id,omitempty"`
 }
+type CreateForChargeItemsAndChargesDiscountParams struct {
+	Percentage  *float64     `json:"percentage,omitempty"`
+	Amount      *int32       `json:"amount,omitempty"`
+	ApplyOn     enum.ApplyOn `json:"apply_on"`
+	ItemPriceId string       `json:"item_price_id,omitempty"`
+}
 type CreateForChargeItemsAndChargesShippingAddressParams struct {
 	FirstName        string                `json:"first_name,omitempty"`
 	LastName         string                `json:"last_name,omitempty"`
@@ -452,6 +481,10 @@ type CreateForChargeItemsAndChargesShippingAddressParams struct {
 	Zip              string                `json:"zip,omitempty"`
 	Country          string                `json:"country,omitempty"`
 	ValidationStatus enum.ValidationStatus `json:"validation_status,omitempty"`
+}
+type CreateForChargeItemsAndChargesStatementDescriptorParams struct {
+	Descriptor     string `json:"descriptor,omitempty"`
+	AdditionalInfo string `json:"additional_info,omitempty"`
 }
 type CreateForChargeItemsAndChargesCardParams struct {
 	Gateway               enum.Gateway           `json:"gateway,omitempty"`
@@ -511,48 +544,51 @@ type CreateForChargeItemsAndChargesPaymentIntentParams struct {
 	AdditionalInformation map[string]interface{}              `json:"additional_information,omitempty"`
 }
 type ChargeRequestParams struct {
-	CustomerId             string               `json:"customer_id,omitempty"`
-	SubscriptionId         string               `json:"subscription_id,omitempty"`
-	CurrencyCode           string               `json:"currency_code,omitempty"`
-	Amount                 *int32               `json:"amount,omitempty"`
-	AmountInDecimal        string               `json:"amount_in_decimal,omitempty"`
-	Description            string               `json:"description"`
-	DateFrom               *int64               `json:"date_from,omitempty"`
-	DateTo                 *int64               `json:"date_to,omitempty"`
-	CouponIds              []string             `json:"coupon_ids,omitempty"`
-	Coupon                 string               `json:"coupon,omitempty"`
-	AvalaraSaleType        enum.AvalaraSaleType `json:"avalara_sale_type,omitempty"`
-	AvalaraTransactionType *int32               `json:"avalara_transaction_type,omitempty"`
-	AvalaraServiceType     *int32               `json:"avalara_service_type,omitempty"`
-	PoNumber               string               `json:"po_number,omitempty"`
-	InvoiceDate            *int64               `json:"invoice_date,omitempty"`
-	PaymentSourceId        string               `json:"payment_source_id,omitempty"`
+	CustomerId             string                `json:"customer_id,omitempty"`
+	SubscriptionId         string                `json:"subscription_id,omitempty"`
+	CurrencyCode           string                `json:"currency_code,omitempty"`
+	Amount                 *int32                `json:"amount,omitempty"`
+	AmountInDecimal        string                `json:"amount_in_decimal,omitempty"`
+	Description            string                `json:"description"`
+	DateFrom               *int64                `json:"date_from,omitempty"`
+	DateTo                 *int64                `json:"date_to,omitempty"`
+	CouponIds              []string              `json:"coupon_ids,omitempty"`
+	Coupon                 string                `json:"coupon,omitempty"`
+	AvalaraSaleType        enum.AvalaraSaleType  `json:"avalara_sale_type,omitempty"`
+	AvalaraTransactionType *int32                `json:"avalara_transaction_type,omitempty"`
+	AvalaraServiceType     *int32                `json:"avalara_service_type,omitempty"`
+	PoNumber               string                `json:"po_number,omitempty"`
+	InvoiceDate            *int64                `json:"invoice_date,omitempty"`
+	PaymentSourceId        string                `json:"payment_source_id,omitempty"`
+	PaymentInitiator       enum.PaymentInitiator `json:"payment_initiator,omitempty"`
 }
 type ChargeAddonRequestParams struct {
-	CustomerId              string   `json:"customer_id,omitempty"`
-	SubscriptionId          string   `json:"subscription_id,omitempty"`
-	AddonId                 string   `json:"addon_id"`
-	AddonQuantity           *int32   `json:"addon_quantity,omitempty"`
-	AddonUnitPrice          *int32   `json:"addon_unit_price,omitempty"`
-	AddonQuantityInDecimal  string   `json:"addon_quantity_in_decimal,omitempty"`
-	AddonUnitPriceInDecimal string   `json:"addon_unit_price_in_decimal,omitempty"`
-	DateFrom                *int64   `json:"date_from,omitempty"`
-	DateTo                  *int64   `json:"date_to,omitempty"`
-	CouponIds               []string `json:"coupon_ids,omitempty"`
-	Coupon                  string   `json:"coupon,omitempty"`
-	PoNumber                string   `json:"po_number,omitempty"`
-	InvoiceDate             *int64   `json:"invoice_date,omitempty"`
-	PaymentSourceId         string   `json:"payment_source_id,omitempty"`
+	CustomerId              string                `json:"customer_id,omitempty"`
+	SubscriptionId          string                `json:"subscription_id,omitempty"`
+	AddonId                 string                `json:"addon_id"`
+	AddonQuantity           *int32                `json:"addon_quantity,omitempty"`
+	AddonUnitPrice          *int32                `json:"addon_unit_price,omitempty"`
+	AddonQuantityInDecimal  string                `json:"addon_quantity_in_decimal,omitempty"`
+	AddonUnitPriceInDecimal string                `json:"addon_unit_price_in_decimal,omitempty"`
+	DateFrom                *int64                `json:"date_from,omitempty"`
+	DateTo                  *int64                `json:"date_to,omitempty"`
+	CouponIds               []string              `json:"coupon_ids,omitempty"`
+	Coupon                  string                `json:"coupon,omitempty"`
+	PoNumber                string                `json:"po_number,omitempty"`
+	InvoiceDate             *int64                `json:"invoice_date,omitempty"`
+	PaymentSourceId         string                `json:"payment_source_id,omitempty"`
+	PaymentInitiator        enum.PaymentInitiator `json:"payment_initiator,omitempty"`
 }
 type CreateForChargeItemRequestParams struct {
-	CustomerId      string                               `json:"customer_id,omitempty"`
-	SubscriptionId  string                               `json:"subscription_id,omitempty"`
-	ItemPrice       *CreateForChargeItemItemPriceParams  `json:"item_price,omitempty"`
-	ItemTiers       []*CreateForChargeItemItemTierParams `json:"item_tiers,omitempty"`
-	PoNumber        string                               `json:"po_number,omitempty"`
-	Coupon          string                               `json:"coupon,omitempty"`
-	PaymentSourceId string                               `json:"payment_source_id,omitempty"`
-	InvoiceDate     *int64                               `json:"invoice_date,omitempty"`
+	CustomerId       string                               `json:"customer_id,omitempty"`
+	SubscriptionId   string                               `json:"subscription_id,omitempty"`
+	ItemPrice        *CreateForChargeItemItemPriceParams  `json:"item_price,omitempty"`
+	ItemTiers        []*CreateForChargeItemItemTierParams `json:"item_tiers,omitempty"`
+	PoNumber         string                               `json:"po_number,omitempty"`
+	Coupon           string                               `json:"coupon,omitempty"`
+	PaymentSourceId  string                               `json:"payment_source_id,omitempty"`
+	PaymentInitiator enum.PaymentInitiator                `json:"payment_initiator,omitempty"`
+	InvoiceDate      *int64                               `json:"invoice_date,omitempty"`
 }
 type CreateForChargeItemItemPriceParams struct {
 	ItemPriceId        string `json:"item_price_id"`
@@ -575,35 +611,44 @@ type StopDunningRequestParams struct {
 	Comment string `json:"comment,omitempty"`
 }
 type ImportInvoiceRequestParams struct {
-	Id                string                              `json:"id"`
-	CurrencyCode      string                              `json:"currency_code,omitempty"`
-	CustomerId        string                              `json:"customer_id,omitempty"`
-	SubscriptionId    string                              `json:"subscription_id,omitempty"`
-	PoNumber          string                              `json:"po_number,omitempty"`
-	PriceType         enum.PriceType                      `json:"price_type,omitempty"`
-	TaxOverrideReason enum.TaxOverrideReason              `json:"tax_override_reason,omitempty"`
-	VatNumber         string                              `json:"vat_number,omitempty"`
-	VatNumberPrefix   string                              `json:"vat_number_prefix,omitempty"`
-	Date              *int64                              `json:"date"`
-	Total             *int32                              `json:"total"`
-	RoundOff          *int32                              `json:"round_off,omitempty"`
-	Status            invoiceEnum.Status                  `json:"status,omitempty"`
-	DueDate           *int64                              `json:"due_date,omitempty"`
-	NetTermDays       *int32                              `json:"net_term_days,omitempty"`
-	UseForProration   *bool                               `json:"use_for_proration,omitempty"`
-	LineItems         []*ImportInvoiceLineItemParams      `json:"line_items,omitempty"`
-	LineItemTiers     []*ImportInvoiceLineItemTierParams  `json:"line_item_tiers,omitempty"`
-	Discounts         []*ImportInvoiceDiscountParams      `json:"discounts,omitempty"`
-	Taxes             []*ImportInvoiceTaxParams           `json:"taxes,omitempty"`
-	Payments          []*ImportInvoicePaymentParams       `json:"payments,omitempty"`
-	Notes             []*ImportInvoiceNoteParams          `json:"notes,omitempty"`
-	BillingAddress    *ImportInvoiceBillingAddressParams  `json:"billing_address,omitempty"`
-	ShippingAddress   *ImportInvoiceShippingAddressParams `json:"shipping_address,omitempty"`
+	Id                      string                                       `json:"id"`
+	CurrencyCode            string                                       `json:"currency_code,omitempty"`
+	CustomerId              string                                       `json:"customer_id,omitempty"`
+	SubscriptionId          string                                       `json:"subscription_id,omitempty"`
+	PoNumber                string                                       `json:"po_number,omitempty"`
+	PriceType               enum.PriceType                               `json:"price_type,omitempty"`
+	TaxOverrideReason       enum.TaxOverrideReason                       `json:"tax_override_reason,omitempty"`
+	VatNumber               string                                       `json:"vat_number,omitempty"`
+	VatNumberPrefix         string                                       `json:"vat_number_prefix,omitempty"`
+	Date                    *int64                                       `json:"date"`
+	Total                   *int32                                       `json:"total"`
+	RoundOff                *int32                                       `json:"round_off,omitempty"`
+	Status                  invoiceEnum.Status                           `json:"status,omitempty"`
+	VoidedAt                *int64                                       `json:"voided_at,omitempty"`
+	VoidReasonCode          string                                       `json:"void_reason_code,omitempty"`
+	IsWrittenOff            *bool                                        `json:"is_written_off,omitempty"`
+	WriteOffAmount          *int32                                       `json:"write_off_amount,omitempty"`
+	WriteOffDate            *int64                                       `json:"write_off_date,omitempty"`
+	DueDate                 *int64                                       `json:"due_date,omitempty"`
+	NetTermDays             *int32                                       `json:"net_term_days,omitempty"`
+	HasAdvanceCharges       *bool                                        `json:"has_advance_charges,omitempty"`
+	UseForProration         *bool                                        `json:"use_for_proration,omitempty"`
+	LineItems               []*ImportInvoiceLineItemParams               `json:"line_items,omitempty"`
+	PaymentReferenceNumbers []*ImportInvoicePaymentReferenceNumberParams `json:"payment_reference_numbers,omitempty"`
+	LineItemTiers           []*ImportInvoiceLineItemTierParams           `json:"line_item_tiers,omitempty"`
+	Discounts               []*ImportInvoiceDiscountParams               `json:"discounts,omitempty"`
+	Taxes                   []*ImportInvoiceTaxParams                    `json:"taxes,omitempty"`
+	CreditNote              *ImportInvoiceCreditNoteParams               `json:"credit_note,omitempty"`
+	Payments                []*ImportInvoicePaymentParams                `json:"payments,omitempty"`
+	Notes                   []*ImportInvoiceNoteParams                   `json:"notes,omitempty"`
+	BillingAddress          *ImportInvoiceBillingAddressParams           `json:"billing_address,omitempty"`
+	ShippingAddress         *ImportInvoiceShippingAddressParams          `json:"shipping_address,omitempty"`
 }
 type ImportInvoiceLineItemParams struct {
 	Id                         string                         `json:"id,omitempty"`
 	DateFrom                   *int64                         `json:"date_from,omitempty"`
 	DateTo                     *int64                         `json:"date_to,omitempty"`
+	SubscriptionId             string                         `json:"subscription_id,omitempty"`
 	Description                string                         `json:"description"`
 	UnitAmount                 *int32                         `json:"unit_amount,omitempty"`
 	Quantity                   *int32                         `json:"quantity,omitempty"`
@@ -638,6 +683,11 @@ type ImportInvoiceLineItemParams struct {
 	Tax10Name                  string                         `json:"tax10_name,omitempty"`
 	Tax10Amount                *int32                         `json:"tax10_amount,omitempty"`
 }
+type ImportInvoicePaymentReferenceNumberParams struct {
+	Id     string                          `json:"id,omitempty"`
+	Type   paymentReferenceNumberEnum.Type `json:"type"`
+	Number string                          `json:"number"`
+}
 type ImportInvoiceLineItemTierParams struct {
 	LineItemId            string `json:"line_item_id"`
 	StartingUnit          *int32 `json:"starting_unit,omitempty"`
@@ -664,6 +714,9 @@ type ImportInvoiceTaxParams struct {
 	JurisType   enum.TaxJurisType `json:"juris_type,omitempty"`
 	JurisName   string            `json:"juris_name,omitempty"`
 	JurisCode   string            `json:"juris_code,omitempty"`
+}
+type ImportInvoiceCreditNoteParams struct {
+	Id string `json:"id,omitempty"`
 }
 type ImportInvoicePaymentParams struct {
 	Amount          *int32             `json:"amount"`
@@ -715,6 +768,12 @@ type ApplyPaymentsRequestParams struct {
 type ApplyPaymentsTransactionParams struct {
 	Id string `json:"id,omitempty"`
 }
+type DeleteLineItemsRequestParams struct {
+	LineItems []*DeleteLineItemsLineItemParams `json:"line_items,omitempty"`
+}
+type DeleteLineItemsLineItemParams struct {
+	Id string `json:"id,omitempty"`
+}
 type ApplyCreditsRequestParams struct {
 	CreditNotes []*ApplyCreditsCreditNoteParams `json:"credit_notes,omitempty"`
 	Comment     string                          `json:"comment,omitempty"`
@@ -763,12 +822,24 @@ type InvoicesForSubscriptionRequestParams struct {
 type PdfRequestParams struct {
 	DispositionType enum.DispositionType `json:"disposition_type,omitempty"`
 }
+type ListPaymentReferenceNumbersRequestParams struct {
+	Limit                  *int32                                                   `json:"limit,omitempty"`
+	Offset                 string                                                   `json:"offset,omitempty"`
+	Id                     *filter.StringFilter                                     `json:"id,omitempty"`
+	PaymentReferenceNumber *ListPaymentReferenceNumbersPaymentReferenceNumberParams `json:"payment_reference_number,omitempty"`
+}
+type ListPaymentReferenceNumbersPaymentReferenceNumberParams struct {
+	Number *filter.StringFilter `json:"number,omitempty"`
+}
 type AddChargeRequestParams struct {
 	Amount                 *int32                   `json:"amount"`
 	Description            string                   `json:"description"`
 	AvalaraSaleType        enum.AvalaraSaleType     `json:"avalara_sale_type,omitempty"`
 	AvalaraTransactionType *int32                   `json:"avalara_transaction_type,omitempty"`
 	AvalaraServiceType     *int32                   `json:"avalara_service_type,omitempty"`
+	AvalaraTaxCode         string                   `json:"avalara_tax_code,omitempty"`
+	HsnCode                string                   `json:"hsn_code,omitempty"`
+	TaxjarProductCode      string                   `json:"taxjar_product_code,omitempty"`
 	LineItem               *AddChargeLineItemParams `json:"line_item,omitempty"`
 	Comment                string                   `json:"comment,omitempty"`
 	SubscriptionId         string                   `json:"subscription_id,omitempty"`
@@ -826,10 +897,11 @@ type CloseNotesToRemoveParams struct {
 	EntityId   string          `json:"entity_id,omitempty"`
 }
 type CollectPaymentRequestParams struct {
-	Amount                     *int32 `json:"amount,omitempty"`
-	AuthorizationTransactionId string `json:"authorization_transaction_id,omitempty"`
-	PaymentSourceId            string `json:"payment_source_id,omitempty"`
-	Comment                    string `json:"comment,omitempty"`
+	Amount                     *int32                `json:"amount,omitempty"`
+	AuthorizationTransactionId string                `json:"authorization_transaction_id,omitempty"`
+	PaymentSourceId            string                `json:"payment_source_id,omitempty"`
+	Comment                    string                `json:"comment,omitempty"`
+	PaymentInitiator           enum.PaymentInitiator `json:"payment_initiator,omitempty"`
 }
 type RecordPaymentRequestParams struct {
 	Transaction *RecordPaymentTransactionParams `json:"transaction,omitempty"`
@@ -844,6 +916,21 @@ type RecordPaymentTransactionParams struct {
 	Date            *int64                 `json:"date,omitempty"`
 	ErrorCode       string                 `json:"error_code,omitempty"`
 	ErrorText       string                 `json:"error_text,omitempty"`
+}
+type RecordTaxWithheldRequestParams struct {
+	TaxWithheld *RecordTaxWithheldTaxWithheldParams `json:"tax_withheld,omitempty"`
+}
+type RecordTaxWithheldTaxWithheldParams struct {
+	Amount          *int32 `json:"amount"`
+	ReferenceNumber string `json:"reference_number,omitempty"`
+	Date            *int64 `json:"date,omitempty"`
+	Description     string `json:"description,omitempty"`
+}
+type RemoveTaxWithheldRequestParams struct {
+	TaxWithheld *RemoveTaxWithheldTaxWithheldParams `json:"tax_withheld,omitempty"`
+}
+type RemoveTaxWithheldTaxWithheldParams struct {
+	Id string `json:"id"`
 }
 type RefundRequestParams struct {
 	RefundAmount  *int32                  `json:"refund_amount,omitempty"`
@@ -884,8 +971,9 @@ type RemoveCreditNoteCreditNoteParams struct {
 	Id string `json:"id"`
 }
 type VoidInvoiceRequestParams struct {
-	Comment        string `json:"comment,omitempty"`
-	VoidReasonCode string `json:"void_reason_code,omitempty"`
+	Comment          string `json:"comment,omitempty"`
+	VoidReasonCode   string `json:"void_reason_code,omitempty"`
+	CreateCreditNote *bool  `json:"create_credit_note,omitempty"`
 }
 type WriteOffRequestParams struct {
 	Comment string `json:"comment,omitempty"`
@@ -895,12 +983,13 @@ type DeleteRequestParams struct {
 	ClaimCredits *bool  `json:"claim_credits,omitempty"`
 }
 type UpdateDetailsRequestParams struct {
-	BillingAddress  *UpdateDetailsBillingAddressParams  `json:"billing_address,omitempty"`
-	ShippingAddress *UpdateDetailsShippingAddressParams `json:"shipping_address,omitempty"`
-	VatNumber       string                              `json:"vat_number,omitempty"`
-	VatNumberPrefix string                              `json:"vat_number_prefix,omitempty"`
-	PoNumber        string                              `json:"po_number,omitempty"`
-	Comment         string                              `json:"comment,omitempty"`
+	BillingAddress      *UpdateDetailsBillingAddressParams      `json:"billing_address,omitempty"`
+	ShippingAddress     *UpdateDetailsShippingAddressParams     `json:"shipping_address,omitempty"`
+	StatementDescriptor *UpdateDetailsStatementDescriptorParams `json:"statement_descriptor,omitempty"`
+	VatNumber           string                                  `json:"vat_number,omitempty"`
+	VatNumberPrefix     string                                  `json:"vat_number_prefix,omitempty"`
+	PoNumber            string                                  `json:"po_number,omitempty"`
+	Comment             string                                  `json:"comment,omitempty"`
 }
 type UpdateDetailsBillingAddressParams struct {
 	FirstName        string                `json:"first_name,omitempty"`
@@ -933,4 +1022,8 @@ type UpdateDetailsShippingAddressParams struct {
 	Zip              string                `json:"zip,omitempty"`
 	Country          string                `json:"country,omitempty"`
 	ValidationStatus enum.ValidationStatus `json:"validation_status,omitempty"`
+}
+type UpdateDetailsStatementDescriptorParams struct {
+	Descriptor     string `json:"descriptor,omitempty"`
+	AdditionalInfo string `json:"additional_info,omitempty"`
 }

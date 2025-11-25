@@ -17,13 +17,21 @@ func (request RequestObj) RequestWithEnv(env Environment) (*Result, error) {
 	if err != nil {
 		panic(err)
 	}
-	res, err1 := Do(req)
-	result := &Result{}
-	if err1 != nil {
-		return result, err1
+	if request.Context != nil {
+		req = req.WithContext(request.Context)
 	}
-	err1 = UnmarshalJSON([]byte(res), result)
-	return result, err1
+	res, requestError := Do(req)
+	result := &Result{}
+	if requestError != nil {
+		return result, requestError
+	}
+
+	if err := UnmarshalJSON(res.Body, result); err != nil {
+		return result, nil
+	}
+	result.responseHeaders = res.Headers
+
+	return result, requestError
 }
 func getBody(method string, path string, form *url.Values) (string, io.Reader) {
 	var body io.Reader

@@ -63,6 +63,7 @@ type Order struct {
 	GiftId                  string                       `json:"gift_id"`
 	ResendReason            string                       `json:"resend_reason"`
 	ResentOrders            []*ResentOrder               `json:"resent_orders"`
+	BusinessEntityId        string                       `json:"business_entity_id"`
 	Object                  string                       `json:"object"`
 }
 type OrderLineItem struct {
@@ -103,6 +104,7 @@ type ShippingAddress struct {
 	Country          string                `json:"country"`
 	Zip              string                `json:"zip"`
 	ValidationStatus enum.ValidationStatus `json:"validation_status"`
+	Index            int32                 `json:"index"`
 	Object           string                `json:"object"`
 }
 type BillingAddress struct {
@@ -161,15 +163,15 @@ type ResentOrder struct {
 	Object  string `json:"object"`
 }
 type CreateRequestParams struct {
-	Id                string      `json:"id,omitempty"`
-	InvoiceId         string      `json:"invoice_id"`
-	Status            enum.Status `json:"status,omitempty"`
-	ReferenceId       string      `json:"reference_id,omitempty"`
-	FulfillmentStatus string      `json:"fulfillment_status,omitempty"`
-	Note              string      `json:"note,omitempty"`
-	TrackingId        string      `json:"tracking_id,omitempty"`
-	TrackingUrl       string      `json:"tracking_url,omitempty"`
-	BatchId           string      `json:"batch_id,omitempty"`
+	Id                string           `json:"id,omitempty"`
+	InvoiceId         string           `json:"invoice_id"`
+	Status            orderEnum.Status `json:"status,omitempty"`
+	ReferenceId       string           `json:"reference_id,omitempty"`
+	FulfillmentStatus string           `json:"fulfillment_status,omitempty"`
+	Note              string           `json:"note,omitempty"`
+	TrackingId        string           `json:"tracking_id,omitempty"`
+	TrackingUrl       string           `json:"tracking_url,omitempty"`
+	BatchId           string           `json:"batch_id,omitempty"`
 }
 type UpdateRequestParams struct {
 	ReferenceId        string                       `json:"reference_id,omitempty"`
@@ -300,6 +302,7 @@ type ListRequestParams struct {
 	SubscriptionId            *filter.StringFilter    `json:"subscription_id,omitempty"`
 	Status                    *filter.EnumFilter      `json:"status,omitempty"`
 	ShippingDate              *filter.TimestampFilter `json:"shipping_date,omitempty"`
+	ShippedAt                 *filter.TimestampFilter `json:"shipped_at,omitempty"`
 	OrderType                 *filter.EnumFilter      `json:"order_type,omitempty"`
 	OrderDate                 *filter.TimestampFilter `json:"order_date,omitempty"`
 	PaidOn                    *filter.TimestampFilter `json:"paid_on,omitempty"`

@@ -65,4 +65,5 @@ func UpdateTotalHTTPTimeout(timeout time.Duration) {
 	if httpClient != nil {
 		httpClient.Timeout = TotalHTTPTimeout
 	}
+
 }

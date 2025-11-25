@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/chargebee/chargebee-go/enum"
 	"github.com/chargebee/chargebee-go/filter"
-	customerEnum "github.com/chargebee/chargebee-go/models/customer/enum"
 	paymentIntentEnum "github.com/chargebee/chargebee-go/models/paymentintent/enum"
+	customerEnum "github.com/chargebee/chargebee-go/models/customer/enum"
 )
 
 type Customer struct {
@@ -33,6 +33,7 @@ type Customer struct {
 	UpdatedAt                        int64                         `json:"updated_at"`
 	Locale                           string                        `json:"locale"`
 	BillingDate                      int32                         `json:"billing_date"`
+	BillingMonth                     int32                         `json:"billing_month"`
 	BillingDateMode                  enum.BillingDateMode          `json:"billing_date_mode"`
 	BillingDayOfWeek                 customerEnum.BillingDayOfWeek `json:"billing_day_of_week"`
 	BillingDayOfWeekMode             enum.BillingDayOfWeekMode     `json:"billing_day_of_week_mode"`
@@ -48,6 +49,7 @@ type Customer struct {
 	Contacts                         []*Contact                    `json:"contacts"`
 	PaymentMethod                    *PaymentMethod                `json:"payment_method"`
 	InvoiceNotes                     string                        `json:"invoice_notes"`
+	BusinessEntityId                 string                        `json:"business_entity_id"`
 	PreferredCurrencyCode            string                        `json:"preferred_currency_code"`
 	PromotionalCredits               int32                         `json:"promotional_credits"`
 	UnbilledCharges                  int32                         `json:"unbilled_charges"`
@@ -56,6 +58,7 @@ type Customer struct {
 	Balances                         []*Balance                    `json:"balances"`
 	EntityIdentifiers                []*EntityIdentifier           `json:"entity_identifiers"`
 	IsEinvoiceEnabled                bool                          `json:"is_einvoice_enabled"`
+	EinvoicingMethod                 enum.EinvoicingMethod         `json:"einvoicing_method"`
 	MetaData                         json.RawMessage               `json:"meta_data"`
 	Deleted                          bool                          `json:"deleted"`
 	RegisteredForGst                 bool                          `json:"registered_for_gst"`
@@ -177,6 +180,7 @@ type CreateRequestParams struct {
 	EntityIdentifierStandard         string                          `json:"entity_identifier_standard,omitempty"`
 	RegisteredForGst                 *bool                           `json:"registered_for_gst,omitempty"`
 	IsEinvoiceEnabled                *bool                           `json:"is_einvoice_enabled,omitempty"`
+	EinvoicingMethod                 enum.EinvoicingMethod           `json:"einvoicing_method,omitempty"`
 	Taxability                       enum.Taxability                 `json:"taxability,omitempty"`
 	ExemptionDetails                 []map[string]interface{}        `json:"exemption_details,omitempty"`
 	CustomerType                     enum.CustomerType               `json:"customer_type,omitempty"`
@@ -197,6 +201,7 @@ type CreateRequestParams struct {
 	PaymentIntent                    *CreatePaymentIntentParams      `json:"payment_intent,omitempty"`
 	BillingAddress                   *CreateBillingAddressParams     `json:"billing_address,omitempty"`
 	EntityIdentifiers                []*CreateEntityIdentifierParams `json:"entity_identifiers,omitempty"`
+	BusinessEntityId                 string                          `json:"business_entity_id,omitempty"`
 	CreatedFromIp                    string                          `json:"created_from_ip,omitempty"`
 	InvoiceNotes                     string                          `json:"invoice_notes,omitempty"`
 }
@@ -294,6 +299,7 @@ type ListRequestParams struct {
 	CreatedAt            *filter.TimestampFilter `json:"created_at,omitempty"`
 	UpdatedAt            *filter.TimestampFilter `json:"updated_at,omitempty"`
 	Relationship         *ListRelationshipParams `json:"relationship,omitempty"`
+	BusinessEntityId     *filter.StringFilter    `json:"business_entity_id,omitempty"`
 	OfflinePaymentMethod *filter.EnumFilter      `json:"offline_payment_method,omitempty"`
 	AutoCloseInvoices    *filter.BooleanFilter   `json:"auto_close_invoices,omitempty"`
 	Channel              *filter.EnumFilter      `json:"channel,omitempty"`
@@ -351,6 +357,7 @@ type UpdateBillingInfoRequestParams struct {
 	RegisteredForGst                 *bool                                      `json:"registered_for_gst,omitempty"`
 	BusinessCustomerWithoutVatNumber *bool                                      `json:"business_customer_without_vat_number,omitempty"`
 	IsEinvoiceEnabled                *bool                                      `json:"is_einvoice_enabled,omitempty"`
+	EinvoicingMethod                 enum.EinvoicingMethod                      `json:"einvoicing_method,omitempty"`
 }
 type UpdateBillingInfoBillingAddressParams struct {
 	FirstName        string                `json:"first_name,omitempty"`
@@ -459,6 +466,7 @@ type CollectPaymentRequestParams struct {
 	PaymentIntent               *CollectPaymentPaymentIntentParams       `json:"payment_intent,omitempty"`
 	ReplacePrimaryPaymentSource *bool                                    `json:"replace_primary_payment_source,omitempty"`
 	RetainPaymentSource         *bool                                    `json:"retain_payment_source,omitempty"`
+	PaymentInitiator            enum.PaymentInitiator                    `json:"payment_initiator,omitempty"`
 }
 type CollectPaymentInvoiceAllocationParams struct {
 	InvoiceId        string `json:"invoice_id"`
@@ -506,6 +514,7 @@ type MoveRequestParams struct {
 }
 type ChangeBillingDateRequestParams struct {
 	BillingDate          *int32                        `json:"billing_date,omitempty"`
+	BillingMonth         *int32                        `json:"billing_month,omitempty"`
 	BillingDateMode      enum.BillingDateMode          `json:"billing_date_mode,omitempty"`
 	BillingDayOfWeek     customerEnum.BillingDayOfWeek `json:"billing_day_of_week,omitempty"`
 	BillingDayOfWeekMode enum.BillingDayOfWeekMode     `json:"billing_day_of_week_mode,omitempty"`

@@ -41,6 +41,7 @@ type LineItem struct {
 	AmountInDecimal         string                                    `json:"amount_in_decimal"`
 	DiscountAmount          int32                                     `json:"discount_amount"`
 	ItemLevelDiscountAmount int32                                     `json:"item_level_discount_amount"`
+	ReferenceLineItemId     string                                    `json:"reference_line_item_id"`
 	Description             string                                    `json:"description"`
 	EntityDescription       string                                    `json:"entity_description"`
 	EntityType              creditNoteEstimateEnum.LineItemEntityType `json:"entity_type"`
@@ -50,11 +51,12 @@ type LineItem struct {
 	Object                  string                                    `json:"object"`
 }
 type Discount struct {
-	Amount      int32                                     `json:"amount"`
-	Description string                                    `json:"description"`
-	EntityType  creditNoteEstimateEnum.DiscountEntityType `json:"entity_type"`
-	EntityId    string                                    `json:"entity_id"`
-	Object      string                                    `json:"object"`
+	Amount        int32                                     `json:"amount"`
+	Description   string                                    `json:"description"`
+	EntityType    creditNoteEstimateEnum.DiscountEntityType `json:"entity_type"`
+	EntityId      string                                    `json:"entity_id"`
+	CouponSetCode string                                    `json:"coupon_set_code"`
+	Object        string                                    `json:"object"`
 }
 type Tax struct {
 	Name        string `json:"name"`

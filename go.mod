@@ -3,7 +3,7 @@ module bitbucket.org/odintsovinc/stripe_chargebee_mapping
 go 1.13
 
 require (
-	github.com/chargebee/chargebee-go v2.10.0+incompatible
+	github.com/chargebee/chargebee-go v2.27.0+incompatible
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pariz/gountries v0.1.5
 	github.com/pkg/errors v0.9.1
