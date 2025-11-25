@@ -152,7 +152,7 @@ func main() {
                 continue
             }
 
-            fmt.Printf("Date %s Amount: %.2f %s, Company: %s Subscription ID: %s Referrer: %v\n",
+            fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
                 txnDate.Format(time.RFC3339),
                 float64(txn.Amount)/100,
                 txn.CurrencyCode,
