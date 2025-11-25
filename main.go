@@ -139,14 +139,26 @@ func main() {
                  log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
             }
 
-            fmt.Printf("%+v", subscription)
+            // No referral information
+            if len(subscription.CustomField) == 0 {
+                continue
+            }
 
-            fmt.Printf("Date %s Amount: %.2f %s, Company: %s Subscription ID: %s\n",
+            // We do have referral information 
+            referrer := subscription.CustomField["cf_referrer_name"] 
+
+            // We do not have one
+            if referrer == nil {
+                continue
+            }
+
+            fmt.Printf("Date %s Amount: %.2f %s, Company: %s Subscription ID: %s Referrer: %v\n",
                 txnDate.Format(time.RFC3339),
                 float64(txn.Amount)/100,
                 txn.CurrencyCode,
                 customer.BillingAddress.Company,
                 txn.SubscriptionId,
+                referrer,
             )
         }
 
