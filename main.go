@@ -124,6 +124,8 @@ func main() {
             log.Fatalf("Cannot get all transactions: %v", err)
         }
 
+        total_value := 0.0
+
         for _, txn := range transactions {
             txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
@@ -160,7 +162,11 @@ func main() {
                 txn.SubscriptionId,
                 referrer,
             )
+
+            total_value += float64(txn.Amount)/100
         }
+
+        log.Printf("Total value: %2.f", total_value)
 
         os.Exit(0)
     } else if *report_type == "stripe_vat"  {
