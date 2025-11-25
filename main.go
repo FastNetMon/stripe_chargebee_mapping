@@ -29,7 +29,7 @@ import (
 
 var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
-var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat or paypal_vat")
+var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat, paypal_vat, referral_transactions")
 
 func main() {
 	flag.Parse()
@@ -112,6 +112,31 @@ func main() {
 		    )
 	    }
 	
+        os.Exit(0)
+    } else if *report_type == "referral_transactions" {
+        transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
+
+        if err != nil {
+            log.Fatalf("Cannot get all transactions: %v", err)
+        }
+
+        for _, txn := range transactions {
+            txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
+
+            customer, err := GetChargebeeUser(txn.CustomerId)
+
+            if err != nil {
+                log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+            }
+                
+            fmt.Printf("Date %s Amount: %.2f %s, Company: %s\n",
+                txnDate.Format(time.RFC3339),
+                float64(txn.Amount)/100,
+                txn.CurrencyCode,
+                customer.BillingAddress.Company,
+            )
+        }
+
         os.Exit(0)
     } else if *report_type == "stripe_vat"  {
         // Keep going down
@@ -318,6 +343,49 @@ func GetChargebeeUser(userID string) (*customer.Customer, error) {
 
         if result.NextOffset != "" {
             another_page, err := get_all_paypal_transactions_period(result.NextOffset, start_period, end_period)
+
+            if err != nil {
+                return nil, fmt.Errorf("Cannot get second page: %v", err)
+            }
+
+            transactions = append(transactions, another_page...)
+        }
+
+        return transactions, nil
+    }
+
+
+    func get_all_transactions_period(offset string, start_period int64, end_period int64) ([]*transactionModel.Transaction, error) {
+        params := &transactionModel.ListRequestParams{
+		    Date: &filter.TimestampFilter{
+			    Between: []int64{int64(start_period), int64(end_period)},
+		    },
+            Status: &filter.EnumFilter{
+                Is: transactionEnum.StatusSuccess, // We need only successful ones
+            },
+            SortBy: &filter.SortFilter{
+			    Asc:  string("date"),
+		    },
+            Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
+            Offset: offset,
+	    }
+
+        result, err := transactionAction.List(params).ListRequest()
+
+	    if err != nil {
+		    return nil, fmt.Errorf("Error retrieving transactions: %v\n", err)
+	    }
+
+        transactions := []*transactionModel.Transaction{}
+
+         for _, entry := range result.List {
+            txn := entry.Transaction
+
+            transactions = append(transactions, txn)
+        }
+
+        if result.NextOffset != "" {
+            another_page, err := get_all_transactions_period(result.NextOffset, start_period, end_period)
 
             if err != nil {
                 return nil, fmt.Errorf("Cannot get second page: %v", err)
