@@ -242,6 +242,9 @@ func main() {
                 } else if txn.Type == "adjustment" && txn.Description == "Contribution from reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
                     // I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
                     continue
+                } else if txn.Type == "adjustment"  && txn.Description == "Hold in reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
+                    // I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
+                    continue
 				} else {
 					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
