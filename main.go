@@ -5,25 +5,25 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-    "os"
-    "os/user"
+	"os"
+	"os/user"
 	"regexp"
 	"strings"
 	"time"
 
-        subscription "github.com/chargebee/chargebee-go/models/subscription"
+	subscription "github.com/chargebee/chargebee-go/models/subscription"
 
-        subscriptionAction "github.com/chargebee/chargebee-go/actions/subscription"
+	subscriptionAction "github.com/chargebee/chargebee-go/actions/subscription"
 
 	"github.com/chargebee/chargebee-go"
-    "github.com/chargebee/chargebee-go/enum"
-	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
-    customerAction "github.com/chargebee/chargebee-go/actions/customer"
+	customerAction "github.com/chargebee/chargebee-go/actions/customer"
+	transactionAction "github.com/chargebee/chargebee-go/actions/transaction"
+	"github.com/chargebee/chargebee-go/enum"
+	"github.com/chargebee/chargebee-go/filter"
 	customer "github.com/chargebee/chargebee-go/models/customer"
-    transactionModel "github.com/chargebee/chargebee-go/models/transaction"
-    transactionAction "github.com/chargebee/chargebee-go/actions/transaction"
-    "github.com/chargebee/chargebee-go/filter"
-    "github.com/pariz/gountries"
+	transactionModel "github.com/chargebee/chargebee-go/models/transaction"
+	transactionEnum "github.com/chargebee/chargebee-go/models/transaction/enum"
+	"github.com/pariz/gountries"
 	"github.com/pkg/errors"
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/balancetransaction"
@@ -33,17 +33,28 @@ import (
 
 var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
+var period = flag.String("period", "", "Predefined period: last_month")
 var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat, paypal_vat, referral_transactions")
 
 func main() {
 	flag.Parse()
 
+	if *period == "last_month" {
+		now := time.Now().UTC()
+		firstOfCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		firstOfLastMonth := firstOfCurrentMonth.AddDate(0, -1, 0)
+		*start = int(firstOfLastMonth.Unix())
+		*end = int(firstOfCurrentMonth.Add(-time.Second).Unix())
+	} else if *period != "" {
+		log.Fatalf("Unknown period: %s. Supported: last_month", *period)
+	}
+
 	if *start == 0 {
-		log.Fatal("Please specify period start date")
+		log.Fatal("Please specify period start date or use -period last_month")
 	}
 
 	if *end == 0 {
-		log.Fatal("Please specify period end date")
+		log.Fatal("Please specify period end date or use -period last_month")
 	}
 
 	usr, err := user.Current()
@@ -77,103 +88,102 @@ func main() {
 		Level: stripe.LevelError,
 	}
 
-    if *report_type == "paypal_vat" {
-        transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
+	if *report_type == "paypal_vat" {
+		transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
 
-        if err != nil {
-            log.Fatalf("Cannot get all PayPal transactions: %v", err)
-        }
+		if err != nil {
+			log.Fatalf("Cannot get all PayPal transactions: %v", err)
+		}
 
+		for _, txn := range transactions {
+			txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
-        for _, txn := range transactions {
-		    txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
+			customer, err := GetChargebeeUser(txn.CustomerId)
 
-            customer, err := GetChargebeeUser(txn.CustomerId)
+			if err != nil {
+				log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+			}
 
-            if err != nil {
-                log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
-            }
+			if customer.BillingAddress == nil {
+				log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
+				continue
+			}
 
-            if customer.BillingAddress == nil {
-                log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
-                continue
-            }
+			vat_info := ""
 
-            vat_info := ""
+			// Only for UK based customer we show VAT rate
+			if customer.BillingAddress.Country == "GB" {
+				vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
+			}
 
-            // Only for UK based customer we show VAT rate
-            if customer.BillingAddress.Country == "GB" {
-                vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
-            }
+			fmt.Printf("Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
+				txnDate.Format(time.RFC3339),
+				float64(txn.Amount)/100,
+				txn.CurrencyCode,
+				customer.BillingAddress.Company,
+				customer.BillingAddress.Country,
+				vat_info,
+			)
+		}
 
-            fmt.Printf("Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
-                txnDate.Format(time.RFC3339),
-			    float64(txn.Amount)/100,
-                txn.CurrencyCode,
-                customer.BillingAddress.Company,
-                customer.BillingAddress.Country,
-                vat_info,
-		    )
-	    }
-	
-        os.Exit(0)
-    } else if *report_type == "referral_transactions" {
-        transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
+		os.Exit(0)
+	} else if *report_type == "referral_transactions" {
+		transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
 
-        if err != nil {
-            log.Fatalf("Cannot get all transactions: %v", err)
-        }
+		if err != nil {
+			log.Fatalf("Cannot get all transactions: %v", err)
+		}
 
-        total_value := 0.0
+		total_value := 0.0
 
-        for _, txn := range transactions {
-            txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
+		for _, txn := range transactions {
+			txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
-            customer, err := GetChargebeeUser(txn.CustomerId)
+			customer, err := GetChargebeeUser(txn.CustomerId)
 
-            if err != nil {
-                log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
-            }
-              
-            subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
+			if err != nil {
+				log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+			}
 
-            if err != nil {
-                 log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
-            }
+			subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
 
-            // No referral information
-            if len(subscription.CustomField) == 0 {
-                continue
-            }
+			if err != nil {
+				log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
+			}
 
-            // We do have referral information 
-            referrer := subscription.CustomField["cf_referrer_name"] 
+			// No referral information
+			if len(subscription.CustomField) == 0 {
+				continue
+			}
 
-            // We do not have one
-            if referrer == nil {
-                continue
-            }
+			// We do have referral information
+			referrer := subscription.CustomField["cf_referrer_name"]
 
-            fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
-                txnDate.Format(time.RFC3339),
-                float64(txn.Amount)/100,
-                txn.CurrencyCode,
-                customer.BillingAddress.Company,
-                txn.SubscriptionId,
-                referrer,
-            )
+			// We do not have one
+			if referrer == nil {
+				continue
+			}
 
-            total_value += float64(txn.Amount)/100
-        }
+			fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
+				txnDate.Format(time.RFC3339),
+				float64(txn.Amount)/100,
+				txn.CurrencyCode,
+				customer.BillingAddress.Company,
+				txn.SubscriptionId,
+				referrer,
+			)
 
-        log.Printf("Total value: %2.f", total_value)
+			total_value += float64(txn.Amount) / 100
+		}
 
-        os.Exit(0)
-    } else if *report_type == "stripe_vat"  {
-        // Keep going down
-    } else {
-        log.Fatalf("Unknown report type: %s", *report_type)
-    }
+		log.Printf("Total value: %2.f", total_value)
+
+		os.Exit(0)
+	} else if *report_type == "stripe_vat" {
+		// Keep going down
+	} else {
+		log.Fatalf("Unknown report type: %s", *report_type)
+	}
 
 	i := payout.List(&stripe.PayoutListParams{ArrivalDateRange: &stripe.RangeQueryParams{
 		GreaterThanOrEqual: int64(*start),
@@ -239,18 +249,18 @@ func main() {
 					// Source:0x14000531570 Status:available Type:adjustment}
 					fmt.Printf("Net amount: %v It's probably chargeback transaction\n", PrintAmount(txn.Net))
 					continue
-                } else if txn.Type == "adjustment" && txn.Description == "Contribution from reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
-                    // I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
-                    continue
-                } else if txn.Type == "adjustment"  && txn.Description == "Hold in reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
-                    // I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
-                    continue
-                } else if txn.Type == "payout_minimum_balance_hold" && txn.ReportingCategory == "payout_minimum_balance_hold" {
-                    fmt.Printf("Stripe hold part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
-                    continue
-                } else if txn.Type == "payout_minimum_balance_release" && txn.ReportingCategory == "payout_minimum_balance_release" {
-                    fmt.Printf("Stripe released part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
-                    continue
+				} else if txn.Type == "adjustment" && txn.Description == "Contribution from reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
+					// I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
+					continue
+				} else if txn.Type == "adjustment" && txn.Description == "Hold in reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
+					// I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
+					continue
+				} else if txn.Type == "payout_minimum_balance_hold" && txn.ReportingCategory == "payout_minimum_balance_hold" {
+					fmt.Printf("Stripe hold part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
+					continue
+				} else if txn.Type == "payout_minimum_balance_release" && txn.ReportingCategory == "payout_minimum_balance_release" {
+					fmt.Printf("Stripe released part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
+					continue
 				} else {
 					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
@@ -348,105 +358,102 @@ func GetChargebeeUser(userID string) (*customer.Customer, error) {
 	return customerRetrieved.Customer, nil
 }
 
- func get_all_paypal_transactions_period(offset string, start_period int64, end_period int64) ([]*transactionModel.Transaction, error) {
-        params := &transactionModel.ListRequestParams{
-		    Date: &filter.TimestampFilter{
-			    Between: []int64{int64(start_period), int64(end_period)},
-		    },
+func get_all_paypal_transactions_period(offset string, start_period int64, end_period int64) ([]*transactionModel.Transaction, error) {
+	params := &transactionModel.ListRequestParams{
+		Date: &filter.TimestampFilter{
+			Between: []int64{int64(start_period), int64(end_period)},
+		},
 
-            Gateway: &filter.EnumFilter{
-                Is: enum.GatewayPaypalExpressCheckout,
-            },
-            Status: &filter.EnumFilter{
-                Is: transactionEnum.StatusSuccess, // We need only successful ones
-            },
-            SortBy: &filter.SortFilter{
-			    Asc:  string("date"),
-		    },
-            Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
-            Offset: offset,
-	    }
+		Gateway: &filter.EnumFilter{
+			Is: enum.GatewayPaypalExpressCheckout,
+		},
+		Status: &filter.EnumFilter{
+			Is: transactionEnum.StatusSuccess, // We need only successful ones
+		},
+		SortBy: &filter.SortFilter{
+			Asc: string("date"),
+		},
+		Limit:  chargebee.Int32(100), // Max 100 per call, you may need to paginate
+		Offset: offset,
+	}
 
-        result, err := transactionAction.List(params).ListRequest()
+	result, err := transactionAction.List(params).ListRequest()
 
-	    if err != nil {
-		    return nil, fmt.Errorf("Error retrieving transactions: %v\n", err)
-	    }
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving transactions: %v\n", err)
+	}
 
-        transactions := []*transactionModel.Transaction{}
+	transactions := []*transactionModel.Transaction{}
 
-         for _, entry := range result.List {
-            txn := entry.Transaction
+	for _, entry := range result.List {
+		txn := entry.Transaction
 
-            transactions = append(transactions, txn)
-        }
+		transactions = append(transactions, txn)
+	}
 
-        if result.NextOffset != "" {
-            another_page, err := get_all_paypal_transactions_period(result.NextOffset, start_period, end_period)
+	if result.NextOffset != "" {
+		another_page, err := get_all_paypal_transactions_period(result.NextOffset, start_period, end_period)
 
-            if err != nil {
-                return nil, fmt.Errorf("Cannot get second page: %v", err)
-            }
+		if err != nil {
+			return nil, fmt.Errorf("Cannot get second page: %v", err)
+		}
 
-            transactions = append(transactions, another_page...)
-        }
+		transactions = append(transactions, another_page...)
+	}
 
-        return transactions, nil
-    }
-
-
-    func get_all_transactions_period(offset string, start_period int64, end_period int64) ([]*transactionModel.Transaction, error) {
-        params := &transactionModel.ListRequestParams{
-		    Date: &filter.TimestampFilter{
-			    Between: []int64{int64(start_period), int64(end_period)},
-		    },
-            Status: &filter.EnumFilter{
-                Is: transactionEnum.StatusSuccess, // We need only successful ones
-            },
-            SortBy: &filter.SortFilter{
-			    Asc:  string("date"),
-		    },
-            Limit: chargebee.Int32(100), // Max 100 per call, you may need to paginate
-            Offset: offset,
-	    }
-
-        result, err := transactionAction.List(params).ListRequest()
-
-	    if err != nil {
-		    return nil, fmt.Errorf("Error retrieving transactions: %v\n", err)
-	    }
-
-        transactions := []*transactionModel.Transaction{}
-
-         for _, entry := range result.List {
-            txn := entry.Transaction
-
-            transactions = append(transactions, txn)
-        }
-
-        if result.NextOffset != "" {
-            another_page, err := get_all_transactions_period(result.NextOffset, start_period, end_period)
-
-            if err != nil {
-                return nil, fmt.Errorf("Cannot get second page: %v", err)
-            }
-
-            transactions = append(transactions, another_page...)
-        }
-
-        return transactions, nil
-    }
-
-
-    // Retrieves subscription from Chargebee
-func GetChargebeeSubscription(subscriptionID string) (*subscription.Subscription, error) {
-
-    subscriptionRetrieved, err := subscriptionAction.Retrieve(subscriptionID).Request()
-
-    if err != nil {
-        return nil, err
-    }
-
-    return subscriptionRetrieved.Subscription, nil
+	return transactions, nil
 }
 
+func get_all_transactions_period(offset string, start_period int64, end_period int64) ([]*transactionModel.Transaction, error) {
+	params := &transactionModel.ListRequestParams{
+		Date: &filter.TimestampFilter{
+			Between: []int64{int64(start_period), int64(end_period)},
+		},
+		Status: &filter.EnumFilter{
+			Is: transactionEnum.StatusSuccess, // We need only successful ones
+		},
+		SortBy: &filter.SortFilter{
+			Asc: string("date"),
+		},
+		Limit:  chargebee.Int32(100), // Max 100 per call, you may need to paginate
+		Offset: offset,
+	}
+
+	result, err := transactionAction.List(params).ListRequest()
+
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving transactions: %v\n", err)
+	}
+
+	transactions := []*transactionModel.Transaction{}
+
+	for _, entry := range result.List {
+		txn := entry.Transaction
+
+		transactions = append(transactions, txn)
+	}
+
+	if result.NextOffset != "" {
+		another_page, err := get_all_transactions_period(result.NextOffset, start_period, end_period)
+
+		if err != nil {
+			return nil, fmt.Errorf("Cannot get second page: %v", err)
+		}
+
+		transactions = append(transactions, another_page...)
+	}
+
+	return transactions, nil
+}
+
+// Retrieves subscription from Chargebee
+func GetChargebeeSubscription(subscriptionID string) (*subscription.Subscription, error) {
+
+	subscriptionRetrieved, err := subscriptionAction.Retrieve(subscriptionID).Request()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return subscriptionRetrieved.Subscription, nil
+}
