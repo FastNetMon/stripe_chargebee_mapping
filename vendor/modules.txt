@@ -1,4 +1,5 @@
 # github.com/chargebee/chargebee-go v2.27.0+incompatible
+## explicit
 github.com/chargebee/chargebee-go
 github.com/chargebee/chargebee-go/actions/customer
 github.com/chargebee/chargebee-go/actions/subscription
@@ -111,16 +112,27 @@ github.com/chargebee/chargebee-go/models/unbilledcharge/enum
 github.com/chargebee/chargebee-go/models/usage
 github.com/chargebee/chargebee-go/models/virtualbankaccount
 github.com/chargebee/chargebee-go/models/virtualbankaccount/enum
+# github.com/kr/pretty v0.1.0
+## explicit
 # github.com/pariz/gountries v0.1.5
+## explicit; go 1.17
 github.com/pariz/gountries
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/stripe/stripe-go v70.15.0+incompatible
+## explicit
 github.com/stripe/stripe-go
 github.com/stripe/stripe-go/balancetransaction
 github.com/stripe/stripe-go/form
 github.com/stripe/stripe-go/payout
 # github.com/vjeantet/jodaTime v1.0.0
+## explicit; go 1.14
 github.com/vjeantet/jodaTime
+# golang.org/x/net v0.53.0
+## explicit; go 1.25.0
+# gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
+## explicit
 # gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
 gopkg.in/yaml.v2
