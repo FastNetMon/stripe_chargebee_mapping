@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
@@ -43,6 +42,7 @@ func main() {
 		now := time.Now().UTC()
 		firstOfCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 		firstOfLastMonth := firstOfCurrentMonth.AddDate(0, -1, 0)
+
 		*start = int(firstOfLastMonth.Unix())
 		*end = int(firstOfCurrentMonth.Add(-time.Second).Unix())
 	} else if *period != "" {
@@ -65,7 +65,7 @@ func main() {
 
 	stripe_key_path := usr.HomeDir + "/.stripe_key"
 
-	data, err := ioutil.ReadFile(stripe_key_path)
+	data, err := os.ReadFile(stripe_key_path)
 
 	if err != nil {
 		log.Fatalf("Cannot read Stripe key from file %s with error %v", stripe_key_path, err)
@@ -75,7 +75,7 @@ func main() {
 
 	chargebee_key_path := usr.HomeDir + "/.chargebee_key"
 
-	dataChargebee, err := ioutil.ReadFile(chargebee_key_path)
+	dataChargebee, err := os.ReadFile(chargebee_key_path)
 
 	if err != nil {
 		log.Fatalf("Cannot read Chargebee key from file %s with error %v", chargebee_key_path, err)

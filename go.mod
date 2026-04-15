@@ -1,6 +1,6 @@
 module bitbucket.org/odintsovinc/stripe_chargebee_mapping
 
-go 1.13
+go 1.26
 
 require (
 	github.com/chargebee/chargebee-go v2.27.0+incompatible
