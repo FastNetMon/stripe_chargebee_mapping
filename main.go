@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/user"
@@ -46,6 +47,7 @@ var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
 var period = flag.String("period", "", "Predefined period: last_month, last_quarter")
 var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat, paypal_vat, referral_transactions")
+var email_to = flag.String("email", "", "Email address to send the report to as a text attachment")
 
 func send_email_no_tracking_no_hubspot(email_from string, email_target string, subject string, text string, html string, attachment_file string) error {
 	from := mail.NewEmail("FastNetMon Team", email_from)
@@ -89,7 +91,7 @@ func send_email_no_tracking_no_hubspot(email_from string, email_target string, s
 	return nil
 }
 
-func calculatePayPalVAT() error {
+func calculatePayPalVAT(output io.Writer) error {
 	transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
 
 	if err != nil {
@@ -116,7 +118,7 @@ func calculatePayPalVAT() error {
 			vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
 		}
 
-		fmt.Printf("Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
+		fmt.Fprintf(output, "Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
 			txnDate.Format(time.RFC3339),
 			float64(txn.Amount)/100,
 			txn.CurrencyCode,
@@ -129,7 +131,7 @@ func calculatePayPalVAT() error {
 	return nil
 }
 
-func getReferralTransactions() error {
+func getReferralTransactions(output io.Writer) error {
 	transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
 
 	if err != nil {
@@ -166,7 +168,7 @@ func getReferralTransactions() error {
 			continue
 		}
 
-		fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
+		fmt.Fprintf(output, "%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
 			txnDate.Format(time.RFC3339),
 			float64(txn.Amount)/100,
 			txn.CurrencyCode,
@@ -178,12 +180,12 @@ func getReferralTransactions() error {
 		total_value += float64(txn.Amount) / 100
 	}
 
-	log.Printf("Total value: %2.f", total_value)
+	fmt.Fprintf(output, "Total value: %2.f", total_value)
 
 	return nil
 }
 
-func calculateStripeVAT() error {
+func calculateStripeVAT(output io.Writer) error {
 
 	i := payout.List(&stripe.PayoutListParams{ArrivalDateRange: &stripe.RangeQueryParams{
 		GreaterThanOrEqual: int64(*start),
@@ -218,7 +220,7 @@ func calculateStripeVAT() error {
 			payment_result = fmt.Sprintf("Failed due to reason: %s", payout.FailureCode)
 		}
 
-		fmt.Printf("Date Arrived: %v Amount: %s %s %s\n", dateArrived, PrintAmount(payout.Amount), payout.Currency, payment_result)
+		fmt.Fprintf(output, "Date Arrived: %v Amount: %s %s %s\n", dateArrived, PrintAmount(payout.Amount), payout.Currency, payment_result)
 
 		// Get sub transactions for this payout
 		transactions, err := GetPayoutTransactions(payout.ID)
@@ -234,20 +236,20 @@ func calculateStripeVAT() error {
 
 			if chargebeeUser == "" {
 				if txn.Description == "REFUND FOR PAYOUT (STRIPE PAYOUT)" {
-					fmt.Printf("Net amount: %v It's probably refund transaction retry from previously failed refunds\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Net amount: %v It's probably refund transaction retry from previously failed refunds\n", PrintAmount(txn.Net))
 					continue
 				} else if txn.Type == "refund_failure" {
-					fmt.Printf("Net amount: %v It's probably refund transaction\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Net amount: %v It's probably refund transaction\n", PrintAmount(txn.Net))
 					continue
 				} else if txn.Type == "stripe_fee" {
-					fmt.Printf("Net amount: %v Radar for Fraud teams fee, it's Stripe fee for fraud screening\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Net amount: %v Radar for Fraud teams fee, it's Stripe fee for fraud screening\n", PrintAmount(txn.Net))
 					continue
 				} else if txn.Type == "adjustment" && txn.ReportingCategory == "dispute" {
 					// &{Amount:-206192 AvailableOn:1717696135 Created:1717696135 Currency:gbp
 					// Description:Chargeback withdrawal for ch_xxx ExchangeRate:0 ID:txn_xxx
 					// Fee:2000 FeeDetails:[0x14000d46050] Net:-208192 Recipient: ReportingCategory:dispute
 					// Source:0x14000531570 Status:available Type:adjustment}
-					fmt.Printf("Net amount: %v It's probably chargeback transaction\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Net amount: %v It's probably chargeback transaction\n", PrintAmount(txn.Net))
 					continue
 				} else if txn.Type == "adjustment" && txn.Description == "Contribution from reserved balance" && txn.Amount == 0 && txn.Fee == 0 {
 					// I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
@@ -256,10 +258,10 @@ func calculateStripeVAT() error {
 					// I suppose it's some kind of Stripe internal transaction which has no meaning for accounting purposes
 					continue
 				} else if txn.Type == "payout_minimum_balance_hold" && txn.ReportingCategory == "payout_minimum_balance_hold" {
-					fmt.Printf("Stripe hold part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Stripe hold part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
 					continue
 				} else if txn.Type == "payout_minimum_balance_release" && txn.ReportingCategory == "payout_minimum_balance_release" {
-					fmt.Printf("Stripe released part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
+					fmt.Fprintf(output, "Stripe released part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
 					continue
 				} else {
 					return fmt.Errorf("unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
@@ -300,10 +302,10 @@ func calculateStripeVAT() error {
 				full_country_name = country_lookup_res.Name.BaseLang.Common
 			}
 
-			fmt.Printf("Net amount: %v %s Company: %s Country: %s %s\n", PrintAmount(txn.Net), txn.Currency, user.BillingAddress.Company, full_country_name, vatSection)
+			fmt.Fprintf(output, "Net amount: %v %s Company: %s Country: %s %s\n", PrintAmount(txn.Net), txn.Currency, user.BillingAddress.Company, full_country_name, vatSection)
 		}
 
-		fmt.Printf("\n")
+		fmt.Fprintf(output, "\n")
 	}
 
 	return nil
@@ -380,28 +382,53 @@ func main() {
 		Level: stripe.LevelError,
 	}
 
+	var output io.Writer = os.Stdout
+	var tmpFile *os.File
+
+	if *email_to != "" {
+		var err error
+		tmpFile, err = os.CreateTemp("", "report-*.txt")
+		if err != nil {
+			log.Fatalf("Cannot create temp file for report: %v", err)
+		}
+		defer os.Remove(tmpFile.Name())
+		defer tmpFile.Close()
+		output = tmpFile
+	}
+
+	var reportErr error
+
 	if *report_type == "paypal_vat" {
-		if err := calculatePayPalVAT(); err != nil {
-			log.Fatalf("PayPal VAT report failed: %v", err)
-		}
-
-		os.Exit(0)
+		reportErr = calculatePayPalVAT(output)
 	} else if *report_type == "referral_transactions" {
-		if err := getReferralTransactions(); err != nil {
-			log.Fatalf("Referral transactions report failed: %v", err)
-		}
-
-		os.Exit(0)
+		reportErr = getReferralTransactions(output)
 	} else if *report_type == "stripe_vat" {
-		if err := calculateStripeVAT(); err != nil {
-			log.Fatalf("Stripe VAT report failed: %v", err)
-		}
-
-		os.Exit(0)
+		reportErr = calculateStripeVAT(output)
 	} else {
 		log.Fatalf("Unknown report type: %s", *report_type)
 	}
 
+	if reportErr != nil {
+		log.Fatalf("%s report failed: %v", *report_type, reportErr)
+	}
+
+	if *email_to != "" {
+		tmpFile.Close()
+
+		err := send_email_no_tracking_no_hubspot(
+			"reports@fastnetmon.com",
+			*email_to,
+			fmt.Sprintf("%s report", *report_type),
+			"Please find the report attached.",
+			"",
+			tmpFile.Name())
+
+		if err != nil {
+			log.Fatalf("Cannot send report email: %v", err)
+		}
+
+		log.Printf("Report sent to %s", *email_to)
+	}
 }
 
 // Returns absolute value for negative or positive values
