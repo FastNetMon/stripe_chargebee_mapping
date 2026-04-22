@@ -89,173 +89,98 @@ func send_email_no_tracking_no_hubspot(email_from string, email_target string, s
 	return nil
 }
 
-func main() {
-	flag.Parse()
-
-	configData, err := os.ReadFile("/etc/stripe_chargebee_mapping.conf")
-	if err != nil {
-		log.Fatalf("Cannot read config file /etc/stripe_chargebee_mapping.conf: %v", err)
-	}
-
-	if err := json.Unmarshal(configData, &config); err != nil {
-		log.Fatalf("Cannot parse config file /etc/stripe_chargebee_mapping.conf: %v", err)
-	}
-
-	if *period == "last_month" {
-		now := time.Now().UTC()
-		firstOfCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		firstOfLastMonth := firstOfCurrentMonth.AddDate(0, -1, 0)
-
-		*start = int(firstOfLastMonth.Unix())
-		*end = int(firstOfCurrentMonth.Add(-time.Second).Unix())
-	} else if *period == "last_quarter" {
-		now := time.Now().UTC()
-		currentQuarter := (int(now.Month()) - 1) / 3 // 0-based quarter index
-		firstMonthOfCurrentQuarter := time.Month(currentQuarter*3 + 1)
-		firstOfCurrentQuarter := time.Date(now.Year(), firstMonthOfCurrentQuarter, 1, 0, 0, 0, 0, time.UTC)
-		firstOfLastQuarter := firstOfCurrentQuarter.AddDate(0, -3, 0)
-
-		*start = int(firstOfLastQuarter.Unix())
-		*end = int(firstOfCurrentQuarter.Add(-time.Second).Unix())
-	} else if *period != "" {
-		log.Fatalf("Unknown period: %s. Supported: last_month, last_quarter", *period)
-	}
-
-	if *start == 0 {
-		log.Fatal("Please specify period start date or use -period last_month or -period last_quarter")
-	}
-
-	if *end == 0 {
-		log.Fatal("Please specify period end date or use -period last_month or -period last_quarter")
-	}
-
-	usr, err := user.Current()
+func calculatePayPalVAT() {
+	transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
 
 	if err != nil {
-		log.Fatal("Cannot get current user")
+		log.Fatalf("Cannot get all PayPal transactions: %v", err)
 	}
 
-	stripe_key_path := usr.HomeDir + "/.stripe_key"
+	for _, txn := range transactions {
+		txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
 
-	data, err := os.ReadFile(stripe_key_path)
-
-	if err != nil {
-		log.Fatalf("Cannot read Stripe key from file %s with error %v", stripe_key_path, err)
-	}
-
-	stripe.Key = strings.TrimSpace(string(data))
-
-	chargebee_key_path := usr.HomeDir + "/.chargebee_key"
-
-	dataChargebee, err := os.ReadFile(chargebee_key_path)
-
-	if err != nil {
-		log.Fatalf("Cannot read Chargebee key from file %s with error %v", chargebee_key_path, err)
-	}
-
-	chargebee.Configure(strings.TrimSpace(string(dataChargebee)), "fastnetmon")
-
-	// Supported log levels: LevelDebug, LevelInfo, LevelWarn, LevelError
-	stripe.DefaultLeveledLogger = &stripe.LeveledLogger{
-		Level: stripe.LevelError,
-	}
-
-	if *report_type == "paypal_vat" {
-		transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
+		customer, err := GetChargebeeUser(txn.CustomerId)
 
 		if err != nil {
-			log.Fatalf("Cannot get all PayPal transactions: %v", err)
+			log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
 		}
 
-		for _, txn := range transactions {
-			txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
-
-			customer, err := GetChargebeeUser(txn.CustomerId)
-
-			if err != nil {
-				log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
-			}
-
-			if customer.BillingAddress == nil {
-				log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
-				continue
-			}
-
-			vat_info := ""
-
-			// Only for UK based customer we show VAT rate
-			if customer.BillingAddress.Country == "GB" {
-				vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
-			}
-
-			fmt.Printf("Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
-				txnDate.Format(time.RFC3339),
-				float64(txn.Amount)/100,
-				txn.CurrencyCode,
-				customer.BillingAddress.Company,
-				customer.BillingAddress.Country,
-				vat_info,
-			)
+		if customer.BillingAddress == nil {
+			log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
+			continue
 		}
 
-		os.Exit(0)
-	} else if *report_type == "referral_transactions" {
-		transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
+		vat_info := ""
+
+		// Only for UK based customer we show VAT rate
+		if customer.BillingAddress.Country == "GB" {
+			vat_info = fmt.Sprintf("VAT: %s Rate: 20%%", customer.VatNumber)
+		}
+
+		fmt.Printf("Date %s Amount: %.2f %s, Company: %s Country: %s %v\n",
+			txnDate.Format(time.RFC3339),
+			float64(txn.Amount)/100,
+			txn.CurrencyCode,
+			customer.BillingAddress.Company,
+			customer.BillingAddress.Country,
+			vat_info,
+		)
+	}
+}
+
+func getReferralTransactions() {
+	transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
+
+	if err != nil {
+		log.Fatalf("Cannot get all transactions: %v", err)
+	}
+
+	total_value := 0.0
+
+	for _, txn := range transactions {
+		txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
+
+		customer, err := GetChargebeeUser(txn.CustomerId)
 
 		if err != nil {
-			log.Fatalf("Cannot get all transactions: %v", err)
+			log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
 		}
 
-		total_value := 0.0
+		subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
 
-		for _, txn := range transactions {
-			txnDate := time.Unix(txn.Date, 0).UTC() // Convert back to time.Time for readability
-
-			customer, err := GetChargebeeUser(txn.CustomerId)
-
-			if err != nil {
-				log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
-			}
-
-			subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
-
-			if err != nil {
-				log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
-			}
-
-			// No referral information
-			if len(subscription.CustomField) == 0 {
-				continue
-			}
-
-			// We do have referral information
-			referrer := subscription.CustomField["cf_referrer_name"]
-
-			// We do not have one
-			if referrer == nil {
-				continue
-			}
-
-			fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
-				txnDate.Format(time.RFC3339),
-				float64(txn.Amount)/100,
-				txn.CurrencyCode,
-				customer.BillingAddress.Company,
-				txn.SubscriptionId,
-				referrer,
-			)
-
-			total_value += float64(txn.Amount) / 100
+		if err != nil {
+			log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
 		}
 
-		log.Printf("Total value: %2.f", total_value)
+		// No referral information
+		if len(subscription.CustomField) == 0 {
+			continue
+		}
 
-		os.Exit(0)
-	} else if *report_type == "stripe_vat" {
-		// Keep going down
-	} else {
-		log.Fatalf("Unknown report type: %s", *report_type)
+		// We do have referral information
+		referrer := subscription.CustomField["cf_referrer_name"]
+
+		// We do not have one
+		if referrer == nil {
+			continue
+		}
+
+		fmt.Printf("%s Amount: %.2f %s Company: %s Subscription ID: %s Referrer: %v\n",
+			txnDate.Format(time.RFC3339),
+			float64(txn.Amount)/100,
+			txn.CurrencyCode,
+			customer.BillingAddress.Company,
+			txn.SubscriptionId,
+			referrer,
+		)
+
+		total_value += float64(txn.Amount) / 100
 	}
+
+	log.Printf("Total value: %2.f", total_value)
+}
+
+func calculateStripeVAT() {
 
 	i := payout.List(&stripe.PayoutListParams{ArrivalDateRange: &stripe.RangeQueryParams{
 		GreaterThanOrEqual: int64(*start),
@@ -377,6 +302,95 @@ func main() {
 
 		fmt.Printf("\n")
 	}
+}
+
+func main() {
+	flag.Parse()
+
+	configData, err := os.ReadFile("/etc/stripe_chargebee_mapping.conf")
+	if err != nil {
+		log.Fatalf("Cannot read config file /etc/stripe_chargebee_mapping.conf: %v", err)
+	}
+
+	if err := json.Unmarshal(configData, &config); err != nil {
+		log.Fatalf("Cannot parse config file /etc/stripe_chargebee_mapping.conf: %v", err)
+	}
+
+	if *period == "last_month" {
+		now := time.Now().UTC()
+		firstOfCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		firstOfLastMonth := firstOfCurrentMonth.AddDate(0, -1, 0)
+
+		*start = int(firstOfLastMonth.Unix())
+		*end = int(firstOfCurrentMonth.Add(-time.Second).Unix())
+	} else if *period == "last_quarter" {
+		now := time.Now().UTC()
+		currentQuarter := (int(now.Month()) - 1) / 3 // 0-based quarter index
+		firstMonthOfCurrentQuarter := time.Month(currentQuarter*3 + 1)
+		firstOfCurrentQuarter := time.Date(now.Year(), firstMonthOfCurrentQuarter, 1, 0, 0, 0, 0, time.UTC)
+		firstOfLastQuarter := firstOfCurrentQuarter.AddDate(0, -3, 0)
+
+		*start = int(firstOfLastQuarter.Unix())
+		*end = int(firstOfCurrentQuarter.Add(-time.Second).Unix())
+	} else if *period != "" {
+		log.Fatalf("Unknown period: %s. Supported: last_month, last_quarter", *period)
+	}
+
+	if *start == 0 {
+		log.Fatal("Please specify period start date or use -period last_month or -period last_quarter")
+	}
+
+	if *end == 0 {
+		log.Fatal("Please specify period end date or use -period last_month or -period last_quarter")
+	}
+
+	usr, err := user.Current()
+
+	if err != nil {
+		log.Fatal("Cannot get current user")
+	}
+
+	stripe_key_path := usr.HomeDir + "/.stripe_key"
+
+	data, err := os.ReadFile(stripe_key_path)
+
+	if err != nil {
+		log.Fatalf("Cannot read Stripe key from file %s with error %v", stripe_key_path, err)
+	}
+
+	stripe.Key = strings.TrimSpace(string(data))
+
+	chargebee_key_path := usr.HomeDir + "/.chargebee_key"
+
+	dataChargebee, err := os.ReadFile(chargebee_key_path)
+
+	if err != nil {
+		log.Fatalf("Cannot read Chargebee key from file %s with error %v", chargebee_key_path, err)
+	}
+
+	chargebee.Configure(strings.TrimSpace(string(dataChargebee)), "fastnetmon")
+
+	// Supported log levels: LevelDebug, LevelInfo, LevelWarn, LevelError
+	stripe.DefaultLeveledLogger = &stripe.LeveledLogger{
+		Level: stripe.LevelError,
+	}
+
+	if *report_type == "paypal_vat" {
+		calculatePayPalVAT()
+
+		os.Exit(0)
+	} else if *report_type == "referral_transactions" {
+		getReferralTransactions()
+
+		os.Exit(0)
+	} else if *report_type == "stripe_vat" {
+		calculateStripeVAT()
+
+		os.Exit(0)
+	} else {
+		log.Fatalf("Unknown report type: %s", *report_type)
+	}
+
 }
 
 // Returns absolute value for negative or positive values
