@@ -32,7 +32,7 @@ import (
 
 var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
-var period = flag.String("period", "", "Predefined period: last_month")
+var period = flag.String("period", "", "Predefined period: last_month, last_quarter")
 var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat, paypal_vat, referral_transactions")
 
 func main() {
@@ -45,16 +45,25 @@ func main() {
 
 		*start = int(firstOfLastMonth.Unix())
 		*end = int(firstOfCurrentMonth.Add(-time.Second).Unix())
+	} else if *period == "last_quarter" {
+		now := time.Now().UTC()
+		currentQuarter := (int(now.Month()) - 1) / 3 // 0-based quarter index
+		firstMonthOfCurrentQuarter := time.Month(currentQuarter*3 + 1)
+		firstOfCurrentQuarter := time.Date(now.Year(), firstMonthOfCurrentQuarter, 1, 0, 0, 0, 0, time.UTC)
+		firstOfLastQuarter := firstOfCurrentQuarter.AddDate(0, -3, 0)
+
+		*start = int(firstOfLastQuarter.Unix())
+		*end = int(firstOfCurrentQuarter.Add(-time.Second).Unix())
 	} else if *period != "" {
-		log.Fatalf("Unknown period: %s. Supported: last_month", *period)
+		log.Fatalf("Unknown period: %s. Supported: last_month, last_quarter", *period)
 	}
 
 	if *start == 0 {
-		log.Fatal("Please specify period start date or use -period last_month")
+		log.Fatal("Please specify period start date or use -period last_month or -period last_quarter")
 	}
 
 	if *end == 0 {
-		log.Fatal("Please specify period end date or use -period last_month")
+		log.Fatal("Please specify period end date or use -period last_month or -period last_quarter")
 	}
 
 	usr, err := user.Current()
