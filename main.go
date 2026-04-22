@@ -416,7 +416,7 @@ func main() {
 		tmpFile.Close()
 
 		err := send_email_no_tracking_no_hubspot(
-			"reports@fastnetmon.com",
+			"sales@fastnetmon.com",
 			*email_to,
 			fmt.Sprintf("%s report", *report_type),
 			"Please find the report attached.",
