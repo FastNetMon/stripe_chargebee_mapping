@@ -89,11 +89,11 @@ func send_email_no_tracking_no_hubspot(email_from string, email_target string, s
 	return nil
 }
 
-func calculatePayPalVAT() {
+func calculatePayPalVAT() error {
 	transactions, err := get_all_paypal_transactions_period("", int64(*start), int64(*end))
 
 	if err != nil {
-		log.Fatalf("Cannot get all PayPal transactions: %v", err)
+		return fmt.Errorf("cannot get all PayPal transactions: %w", err)
 	}
 
 	for _, txn := range transactions {
@@ -102,12 +102,11 @@ func calculatePayPalVAT() {
 		customer, err := GetChargebeeUser(txn.CustomerId)
 
 		if err != nil {
-			log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+			return fmt.Errorf("cannot get customer information for ID %s: %w", txn.CustomerId, err)
 		}
 
 		if customer.BillingAddress == nil {
-			log.Printf("Unexpected empty billing address for %s", txn.CustomerId)
-			continue
+			return fmt.Errorf("unexpected empty billing address for %s", txn.CustomerId)
 		}
 
 		vat_info := ""
@@ -126,13 +125,15 @@ func calculatePayPalVAT() {
 			vat_info,
 		)
 	}
+
+	return nil
 }
 
-func getReferralTransactions() {
+func getReferralTransactions() error {
 	transactions, err := get_all_transactions_period("", int64(*start), int64(*end))
 
 	if err != nil {
-		log.Fatalf("Cannot get all transactions: %v", err)
+		return fmt.Errorf("cannot get all transactions: %w", err)
 	}
 
 	total_value := 0.0
@@ -143,13 +144,13 @@ func getReferralTransactions() {
 		customer, err := GetChargebeeUser(txn.CustomerId)
 
 		if err != nil {
-			log.Fatalf("Cannot get customer information for ID %s: %v", txn.CustomerId, err)
+			return fmt.Errorf("cannot get customer information for ID %s: %w", txn.CustomerId, err)
 		}
 
 		subscription, err := GetChargebeeSubscription(txn.SubscriptionId)
 
 		if err != nil {
-			log.Fatalf("Cannot get subscription information for ID %s: %v", txn.SubscriptionId, err)
+			return fmt.Errorf("cannot get subscription information for ID %s: %w", txn.SubscriptionId, err)
 		}
 
 		// No referral information
@@ -178,9 +179,11 @@ func getReferralTransactions() {
 	}
 
 	log.Printf("Total value: %2.f", total_value)
+
+	return nil
 }
 
-func calculateStripeVAT() {
+func calculateStripeVAT() error {
 
 	i := payout.List(&stripe.PayoutListParams{ArrivalDateRange: &stripe.RangeQueryParams{
 		GreaterThanOrEqual: int64(*start),
@@ -195,7 +198,7 @@ func calculateStripeVAT() {
 	}
 
 	if err := i.Err(); err != nil {
-		log.Fatalf("Cannot retrieve all payouts: %v", err)
+		return fmt.Errorf("cannot retrieve all payouts: %w", err)
 	}
 
 	payoutsReverse := []*stripe.Payout{}
@@ -221,7 +224,7 @@ func calculateStripeVAT() {
 		transactions, err := GetPayoutTransactions(payout.ID)
 
 		if err != nil {
-			log.Fatalf("Cannot get transactions: %v", err)
+			return fmt.Errorf("cannot get transactions: %w", err)
 		}
 
 		for _, txn := range transactions {
@@ -259,7 +262,7 @@ func calculateStripeVAT() {
 					fmt.Printf("Stripe released part of payment to maintain balance: %v\n", PrintAmount(txn.Net))
 					continue
 				} else {
-					log.Fatalf("Unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
+					return fmt.Errorf("unexpected issue with match from description: '%s' for transaction: %+v", txn.Description, txn)
 				}
 			}
 
@@ -269,7 +272,7 @@ func calculateStripeVAT() {
 			user, err := GetChargebeeUser(chargebeeUser)
 
 			if err != nil {
-				log.Fatalf("Cannot get user id from transaction description string: %s", txn.Description)
+				return fmt.Errorf("cannot get user from transaction description string: %s: %w", txn.Description, err)
 			}
 
 			vatSection := ""
@@ -291,7 +294,7 @@ func calculateStripeVAT() {
 				country_lookup_res, err := query.FindCountryByAlpha(user.BillingAddress.Country)
 
 				if err != nil {
-					log.Fatalf("Cannot get country name for code: %s %v", user.BillingAddress.Country, err)
+					return fmt.Errorf("cannot get country name for code: %s: %w", user.BillingAddress.Country, err)
 				}
 
 				full_country_name = country_lookup_res.Name.BaseLang.Common
@@ -302,6 +305,8 @@ func calculateStripeVAT() {
 
 		fmt.Printf("\n")
 	}
+
+	return nil
 }
 
 func main() {
@@ -376,15 +381,21 @@ func main() {
 	}
 
 	if *report_type == "paypal_vat" {
-		calculatePayPalVAT()
+		if err := calculatePayPalVAT(); err != nil {
+			log.Fatalf("PayPal VAT report failed: %v", err)
+		}
 
 		os.Exit(0)
 	} else if *report_type == "referral_transactions" {
-		getReferralTransactions()
+		if err := getReferralTransactions(); err != nil {
+			log.Fatalf("Referral transactions report failed: %v", err)
+		}
 
 		os.Exit(0)
 	} else if *report_type == "stripe_vat" {
-		calculateStripeVAT()
+		if err := calculateStripeVAT(); err != nil {
+			log.Fatalf("Stripe VAT report failed: %v", err)
+		}
 
 		os.Exit(0)
 	} else {
