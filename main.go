@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -9,6 +11,10 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/sendgrid/sendgrid-go"
+
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	subscription "github.com/chargebee/chargebee-go/models/subscription"
 
@@ -30,13 +36,70 @@ import (
 	"github.com/vjeantet/jodaTime"
 )
 
+type Config struct {
+	SendGridEmailKey string `json:"sendgrid_email_key"`
+}
+
+var config Config
+
 var start = flag.Int("period_start", 0, "start of report period")
 var end = flag.Int("period_end", 0, "end of report period")
 var period = flag.String("period", "", "Predefined period: last_month, last_quarter")
 var report_type = flag.String("query_type", "stripe_vat", "Type of query: stripe_vat, paypal_vat, referral_transactions")
 
+func send_email_no_tracking_no_hubspot(email_from string, email_target string, subject string, text string, html string, attachment_file string) error {
+	from := mail.NewEmail("FastNetMon Team", email_from)
+	to := mail.NewEmail("FastNetMon User", email_target)
+
+	message := mail.NewSingleEmail(from, subject, to, text, html)
+
+	falseFlag := false
+
+	// Disable all kinds of tracking for these emails
+	message.TrackingSettings = &mail.TrackingSettings{
+		ClickTracking: &mail.ClickTrackingSetting{Enable: &falseFlag},
+		OpenTracking:  &mail.OpenTrackingSetting{Enable: &falseFlag},
+	}
+
+	if attachment_file != "" {
+		fileData, err := os.ReadFile(attachment_file)
+		if err != nil {
+			return fmt.Errorf("cannot read attachment file %s: %w", attachment_file, err)
+		}
+
+		attachment := mail.NewAttachment()
+		attachment.SetContent(base64.StdEncoding.EncodeToString(fileData))
+		attachment.SetType("text/plain")
+		attachment.SetFilename(attachment_file[strings.LastIndex(attachment_file, "/")+1:])
+		attachment.SetDisposition("attachment")
+
+		message.AddAttachment(attachment)
+	}
+
+	client := sendgrid.NewSendClient(config.SendGridEmailKey)
+
+	response, err := client.Send(message)
+
+	if err != nil {
+		return err
+	}
+
+	_ = response
+
+	return nil
+}
+
 func main() {
 	flag.Parse()
+
+	configData, err := os.ReadFile("/etc/stripe_chargebee_mapping.conf")
+	if err != nil {
+		log.Fatalf("Cannot read config file /etc/stripe_chargebee_mapping.conf: %v", err)
+	}
+
+	if err := json.Unmarshal(configData, &config); err != nil {
+		log.Fatalf("Cannot parse config file /etc/stripe_chargebee_mapping.conf: %v", err)
+	}
 
 	if *period == "last_month" {
 		now := time.Now().UTC()
